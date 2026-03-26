@@ -16,15 +16,15 @@ type Props = {
 export default function BiodataCard({ data }: Props) {
 
   const handleView = () => {
-  router.push({
-    pathname: "/details/[id]",
-    params: { id: data.id.toString() }
-  });
-};
+    router.push({
+      pathname: "/details/[id]",
+      params: { id: data.id.toString() }
+    });
+  };
 
   return (
-    <View style={styles.card}>
-
+    <TouchableOpacity style={styles.card} activeOpacity={0.9} onPress={handleView}>
+      
       <Image
         source={{ uri: "https://randomuser.me/api/portraits/men/1.jpg" }}
         style={styles.image}
@@ -32,7 +32,9 @@ export default function BiodataCard({ data }: Props) {
 
       <View style={styles.info}>
 
-        <Text style={styles.name}>{data.name}</Text>
+        <Text style={styles.name}>
+          {data.name}
+        </Text>
 
         <Text style={styles.meta}>
           {data.age} yrs • {data.city}
@@ -42,70 +44,81 @@ export default function BiodataCard({ data }: Props) {
           {data.profession}
         </Text>
 
-        <TouchableOpacity
-          style={styles.button}
-          onPress={handleView}
-        >
+        <View style={styles.button}>
           <Text style={styles.buttonText}>
-            View More
+            View Profile →
           </Text>
-        </TouchableOpacity>
+        </View>
 
       </View>
 
-    </View>
+    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
 
-  card:{
-    flexDirection:"row",
-    backgroundColor:"#fff",
-    marginBottom:12,
-    borderRadius:10,
-    overflow:"hidden",
-    elevation:3
+  card: {
+    flexDirection: "row",
+    backgroundColor: "#fff",
+    marginBottom: 14,
+    borderRadius: 16,
+    padding: 10,
+    alignItems: "center",
+
+    // shadow (iOS)
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+
+    // shadow (Android)
+    elevation: 4
   },
 
-  image:{
-    width:110,
-    height:110
+  image: {
+    width: 90,
+    height: 90,
+    borderRadius: 50
   },
 
-  info:{
-    flex:1,
-    padding:10,
-    justifyContent:"center"
+  info: {
+    flex: 1,
+    marginLeft: 12,
+    justifyContent: "center"
   },
 
-  name:{
-    fontSize:16,
-    fontWeight:"bold",
-    marginBottom:3
+  name: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: "#222"
   },
 
-  meta:{
-    color:"#666"
+  meta: {
+    color: "#777",
+    marginTop: 2,
+    fontSize: 13
   },
 
-  profession:{
-    marginTop:3
+  profession: {
+    marginTop: 4,
+    fontSize: 14,
+    color: "#444"
   },
 
-  button:{
-    marginTop:8,
-    backgroundColor:"#ff4d4d",
-    paddingVertical:6,
-    paddingHorizontal:10,
-    borderRadius:6,
-    alignSelf:"flex-start"
+  button: {
+    marginTop: 8,
+    backgroundColor: "#E94057",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    alignSelf: "flex-start"
   },
 
-  buttonText:{
-    color:"#fff",
-    fontSize:12,
-    fontWeight:"600"
+  buttonText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "600"
   }
 
 });
