@@ -1,70 +1,146 @@
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
 type HeaderProps = {
-  title: string;
+  title?: string;
+  showBack?: boolean;
+  showProfile?: boolean;
 };
 
-export default function Header({ title }: HeaderProps) {
-
+export default function Header({
+  title,
+  showBack = false,
+  showProfile = true,
+}: HeaderProps) {
   return (
-    <View style={styles.container}>
+    <View style={styles.wrapper}>
+      <View style={styles.container}>
 
-      {/* Back Button */}
-      <TouchableOpacity
-        style={styles.backButton}
-        onPress={() => router.back()}
-      >
-        <Ionicons name="arrow-back" size={24} color="#FF6B00" />
-      </TouchableOpacity>
+        {/* LEFT */}
+        <View style={styles.leftSection}>
+          {showBack ? (
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => router.back()}
+            >
+              <Ionicons name="arrow-back" size={22} color="#7A1120" />
+            </TouchableOpacity>
+          ) : (
+            <Image
+              source={require("../../../assets/images/icon.png")}
+              style={styles.logo}
+            />
+          )}
+        </View>
 
-      {/* Title */}
-      <Text style={styles.title}>{title}</Text>
+        {/* CENTER */}
+        <View style={styles.centerSection}>
+          <Text style={styles.mainTitle}>
+            {title ? title : "भाग्यबंधन"}
+          </Text>
 
-      {/* Spacer */}
-      <View style={styles.rightSpace} />
+          {!title && (
+            <Text style={styles.subTitle}>
+              नशिबाने जुळलेली जोडी
+            </Text>
+          )}
+        </View>
 
+        {/* RIGHT */}
+        <View style={styles.rightSection}>
+          {showProfile ? (
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => router.push("/profile")}
+            >
+              <Ionicons name="person-outline" size={22} color="#7A1120" />
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.sideSpace} />
+          )}
+        </View>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-
-  container:{
-    flexDirection:"row",
-    alignItems:"center",
-    justifyContent:"space-between",
-    paddingTop:50,
-    paddingBottom:14,
-    paddingHorizontal:18,
-    backgroundColor:"#FFF5F0",
-    borderBottomWidth:1,
-    borderBottomColor:"#F0E6E2"
+  wrapper: {
+    backgroundColor: "#FFF8F2",
+    paddingTop: 48,
+    paddingBottom: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E8D9C8",
   },
 
-  backButton:{
-    width:32,
-    height:32,
-    justifyContent:"center",
-    alignItems:"center",
-    borderRadius:20,
-    backgroundColor:"#FFFFFF",
-    shadowColor:"#000",
-    shadowOpacity:0.05,
-    shadowRadius:4,
-    elevation:2
+  container: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
   },
 
-  title:{
-    fontSize:18,
-    fontWeight:"700",
-    color:"#333",
-    letterSpacing:0.3
+  leftSection: {
+    width: 52,
+    alignItems: "flex-start",
+    justifyContent: "center",
   },
 
-  rightSpace:{
-    width:32
-  }
+  centerSection: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
+  rightSection: {
+    width: 52,
+    alignItems: "flex-end",
+    justifyContent: "center",
+  },
+
+  logo: {
+    width: 46,
+    height: 46,
+    borderRadius: 12,
+    resizeMode: "contain",
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#E8D9C8",
+  },
+
+  mainTitle: {
+    fontSize: 24,
+    fontWeight: "800",
+    color: "#7A1120",
+    letterSpacing: 0.4,
+  },
+
+  subTitle: {
+    fontSize: 11,
+    color: "#B08B3E",
+    marginTop: 2,
+    fontWeight: "600",
+    letterSpacing: 0.3,
+  },
+
+  iconButton: {
+    width: 38,
+    height: 38,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 20,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E8D9C8",
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    elevation: 2,
+  },
+
+  sideSpace: {
+    width: 38,
+    height: 38,
+  },
 });

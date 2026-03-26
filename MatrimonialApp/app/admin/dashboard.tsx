@@ -1,8 +1,11 @@
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
+import Header from "../components/header/Header";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function AdminDashboard() {
+
   const handleLogout = async () => {
     await AsyncStorage.clear();
     router.replace("/(auth)/login");
@@ -10,71 +13,163 @@ export default function AdminDashboard() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Admin Dashboard</Text>
-      <Text style={styles.subtitle}>Welcome Admin 👑</Text>
 
-      <View style={styles.card}>
-        <Text style={styles.cardText}>📋 Manage All Biodata</Text>
-      </View>
+      {/* HEADER */}
+      <Header title="Admin Panel" showBack={false} showProfile={false} />
 
-      <View style={styles.card}>
-        <Text style={styles.cardText}>👥 Manage Users</Text>
-      </View>
+      <ScrollView showsVerticalScrollIndicator={false}>
 
-      <View style={styles.card}>
-        <Text style={styles.cardText}>💳 Payment Reports</Text>
-      </View>
+        {/* WELCOME */}
+        <View style={styles.topSection}>
+          <Text style={styles.title}>Welcome Admin 👑</Text>
+          <Text style={styles.subtitle}>
+            Manage users, biodata & subscriptions
+          </Text>
+        </View>
 
-      <TouchableOpacity style={styles.button} onPress={handleLogout}>
-        <Text style={styles.buttonText}>Logout</Text>
-      </TouchableOpacity>
+        {/* STATS CARDS */}
+        <View style={styles.statsRow}>
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>120</Text>
+            <Text style={styles.statLabel}>Biodata</Text>
+          </View>
+
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>85</Text>
+            <Text style={styles.statLabel}>Users</Text>
+          </View>
+
+          <View style={styles.statCard}>
+            <Text style={styles.statNumber}>40</Text>
+            <Text style={styles.statLabel}>Premium</Text>
+          </View>
+        </View>
+
+        {/* ACTION CARDS */}
+        <View style={styles.cardContainer}>
+
+          <TouchableOpacity style={styles.card}>
+            <Ionicons name="document-text-outline" size={20} color="#7A1120" />
+            <Text style={styles.cardText}>Manage Biodata</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.card}>
+            <Ionicons name="people-outline" size={20} color="#7A1120" />
+            <Text style={styles.cardText}>Manage Users</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.card}>
+            <Ionicons name="card-outline" size={20} color="#7A1120" />
+            <Text style={styles.cardText}>Payment Reports</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.card}>
+            <Ionicons name="megaphone-outline" size={20} color="#7A1120" />
+            <Text style={styles.cardText}>Manage Ads</Text>
+          </TouchableOpacity>
+
+        </View>
+
+        {/* LOGOUT */}
+        <TouchableOpacity style={styles.button} onPress={handleLogout}>
+          <Text style={styles.buttonText}>Logout</Text>
+        </TouchableOpacity>
+
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+
   container: {
     flex: 1,
-    backgroundColor: "#F8F3EA",
-    padding: 24,
-    justifyContent: "center",
+    backgroundColor: "#FFF8F2",
   },
+
+  topSection: {
+    paddingHorizontal: 20,
+    marginTop: 10,
+    marginBottom: 20,
+  },
+
   title: {
-    fontSize: 30,
+    fontSize: 22,
     fontWeight: "800",
-    color: "#7A0F1E",
-    textAlign: "center",
-    marginBottom: 8,
+    color: "#7A1120",
   },
+
   subtitle: {
-    fontSize: 15,
-    color: "#6B5B4F",
-    textAlign: "center",
-    marginBottom: 30,
+    fontSize: 13,
+    color: "#777",
+    marginTop: 4,
   },
-  card: {
-    backgroundColor: "#FFFDF9",
-    borderRadius: 20,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: "#E7D9C7",
-    marginBottom: 14,
+
+  statsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    marginBottom: 20,
   },
-  cardText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#3A2A22",
-  },
-  button: {
-    backgroundColor: "#7A0F1E",
-    paddingVertical: 16,
-    borderRadius: 18,
+
+  statCard: {
+    backgroundColor: "#fff",
+    width: "30%",
+    borderRadius: 14,
+    paddingVertical: 14,
     alignItems: "center",
-    marginTop: 20,
+    borderWidth: 1,
+    borderColor: "#E8D9C8",
   },
+
+  statNumber: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#7A1120",
+  },
+
+  statLabel: {
+    fontSize: 12,
+    color: "#777",
+    marginTop: 4,
+  },
+
+  cardContainer: {
+    paddingHorizontal: 16,
+  },
+
+  card: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderRadius: 14,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#E8D9C8",
+  },
+
+  cardText: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#333",
+    marginLeft: 12,
+  },
+
+  button: {
+    backgroundColor: "#7A1120",
+    marginHorizontal: 20,
+    marginTop: 20,
+    marginBottom: 30,
+    paddingVertical: 15,
+    borderRadius: 30,
+    alignItems: "center",
+  },
+
   buttonText: {
-    color: "#F8F3EA",
-    fontSize: 16,
+    color: "#fff",
+    fontSize: 15,
     fontWeight: "700",
   },
+
 });

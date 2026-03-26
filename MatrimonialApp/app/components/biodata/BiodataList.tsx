@@ -7,6 +7,9 @@ type Biodata = {
   age: number;
   city: string;
   profession: string;
+  image?: string;
+  isPremium?: boolean;
+  isVerified?: boolean;
 };
 
 type Props = {
@@ -20,7 +23,7 @@ export default function BiodataList({ data, loading }: Props) {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#E94057" />
+        <ActivityIndicator size="large" color="#7A1120" />
         <Text style={styles.loadingText}>Loading profiles...</Text>
       </View>
     );
@@ -30,7 +33,10 @@ export default function BiodataList({ data, loading }: Props) {
   if (!data || data.length === 0) {
     return (
       <View style={styles.center}>
-        <Text style={styles.emptyText}>No profiles found 😔</Text>
+        <Text style={styles.emptyTitle}>No Profiles Found 😔</Text>
+        <Text style={styles.emptySub}>
+          Try adjusting your search or filters
+        </Text>
       </View>
     );
   }
@@ -40,7 +46,7 @@ export default function BiodataList({ data, loading }: Props) {
       data={data}
       keyExtractor={(item) => item.id.toString()}
       renderItem={({ item }) => <BiodataCard data={item} />}
-      
+
       contentContainerStyle={styles.container}
       showsVerticalScrollIndicator={false}
 
@@ -55,26 +61,36 @@ export default function BiodataList({ data, loading }: Props) {
 const styles = StyleSheet.create({
 
   container: {
-    paddingHorizontal: 12,
     paddingTop: 10,
-    paddingBottom: 20
+    paddingBottom: 30
   },
 
   center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 50
+    marginTop: 60,
+    paddingHorizontal: 20
   },
 
   loadingText: {
     marginTop: 10,
-    color: "#666"
+    color: "#7A1120",
+    fontSize: 14,
+    fontWeight: "600"
   },
 
-  emptyText: {
-    fontSize: 16,
-    color: "#999"
+  emptyTitle: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: "#7A1120"
+  },
+
+  emptySub: {
+    fontSize: 13,
+    color: "#777",
+    marginTop: 6,
+    textAlign: "center"
   }
 
 });

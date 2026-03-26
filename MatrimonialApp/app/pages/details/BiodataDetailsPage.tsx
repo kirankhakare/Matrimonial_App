@@ -5,147 +5,313 @@ import { Ionicons } from "@expo/vector-icons";
 
 export default function BiodataDetailsPage() {
 
-  return (
+  const isPremiumLocked = true; // 🔹 later backend check
 
+  return (
     <LinearGradient
-      colors={["#FFF5F0", "#FFFFFF", "#F9F0FF"]}
+      colors={["#FFF8F2", "#FFFFFF", "#FFF9F4"]}
       style={styles.gradient}
     >
-
-      <Header title="Biodata Details" />
+      {/* HEADER */}
+      <Header title="Biodata Details" showBack showProfile={false} />
 
       <ScrollView showsVerticalScrollIndicator={false}>
 
-        {/* Profile Image */}
+        {/* PROFILE TOP */}
         <View style={styles.profileContainer}>
-          <Image
-            source={{ uri: "https://picsum.photos/200" }}
-            style={styles.profileImage}
-          />
+          <View style={styles.imageWrapper}>
+            <Image
+              source={{ uri: "https://picsum.photos/200" }}
+              style={styles.profileImage}
+            />
 
-          <Text style={styles.name}>Rahul Patil</Text>
+            {/* Verified */}
+            <View style={styles.verifiedBadge}>
+              <Ionicons name="checkmark-circle" size={22} color="#22C55E" />
+            </View>
+
+            {/* Premium */}
+            <View style={styles.premiumBadge}>
+              <Ionicons name="lock-closed" size={12} color="#fff" />
+              <Text style={styles.badgeText}> Premium</Text>
+            </View>
+          </View>
+
+          <Text style={styles.name}>R***l P***l</Text>
           <Text style={styles.meta}>28 yrs • Pune</Text>
+
+          {/* Top Buttons */}
+          <View style={styles.topButtonRow}>
+            <TouchableOpacity style={styles.shareBtn}>
+              <Ionicons name="share-social-outline" size={16} color="#7A1120" />
+              <Text style={styles.shareText}> Share</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.saveBtn}>
+              <Ionicons name="heart-outline" size={16} color="#7A1120" />
+              <Text style={styles.shareText}> Save</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
-        {/* Biodata Info Card */}
+        {/* BASIC INFO */}
         <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Basic Information</Text>
 
-          <Text style={styles.label}>Profession</Text>
-          <Text style={styles.value}>Engineer</Text>
+          <View style={styles.row}>
+            <Text style={styles.label}>Profession</Text>
+            <Text style={styles.value}>Engineer</Text>
+          </View>
 
-          <Text style={styles.label}>Education</Text>
-          <Text style={styles.value}>BE Mechanical</Text>
+          <View style={styles.row}>
+            <Text style={styles.label}>Education</Text>
+            <Text style={styles.value}>BE Mechanical</Text>
+          </View>
 
-          <Text style={styles.label}>Religion</Text>
-          <Text style={styles.value}>Jain</Text>
+          <View style={styles.row}>
+            <Text style={styles.label}>Religion</Text>
+            <Text style={styles.value}>Jain</Text>
+          </View>
 
+          <View style={styles.row}>
+            <Text style={styles.label}>Height</Text>
+            <Text style={styles.value}>5'8"</Text>
+          </View>
+
+          <View style={styles.row}>
+            <Text style={styles.label}>City</Text>
+            <Text style={styles.value}>Pune</Text>
+          </View>
         </View>
 
-        {/* Locked Section */}
+        {/* LOCKED PREMIUM INFO */}
         <View style={styles.lockCard}>
+          <Text style={styles.sectionTitle}>Premium Locked Details 🔒</Text>
 
           <View style={styles.lockRow}>
-            <Ionicons name="lock-closed" size={18} color="#FF6B00" />
+            <Ionicons name="lock-closed" size={18} color="#7A1120" />
             <Text style={styles.lockText}>Contact Number Locked</Text>
           </View>
 
           <View style={styles.lockRow}>
-            <Ionicons name="lock-closed" size={18} color="#FF6B00" />
+            <Ionicons name="lock-closed" size={18} color="#7A1120" />
+            <Text style={styles.lockText}>Email ID Locked</Text>
+          </View>
+
+          <View style={styles.lockRow}>
+            <Ionicons name="lock-closed" size={18} color="#7A1120" />
             <Text style={styles.lockText}>Family Details Locked</Text>
           </View>
 
+          <View style={styles.lockRow}>
+            <Ionicons name="lock-closed" size={18} color="#7A1120" />
+            <Text style={styles.lockText}>Annual Income Locked</Text>
+          </View>
+
+          <View style={styles.lockRow}>
+            <Ionicons name="lock-closed" size={18} color="#7A1120" />
+            <Text style={styles.lockText}>Partner Preference Full Details Locked</Text>
+          </View>
         </View>
 
-        {/* Unlock Button */}
+        {/* SUBSCRIPTION BANNER */}
+        {isPremiumLocked && (
+          <View style={styles.subscriptionCard}>
+            <Text style={styles.subTitle}>Unlock Full Biodata 🔓</Text>
+            <Text style={styles.subText}>
+              ₹100 मध्ये 1 वर्षासाठी contact details, family info आणि premium biodata access मिळवा
+            </Text>
+          </View>
+        )}
+
+        {/* UNLOCK BUTTON */}
         <TouchableOpacity style={styles.unlockButton}>
-          <Text style={styles.unlockText}>Unlock Contact</Text>
+          <Text style={styles.unlockText}>Unlock Full Biodata</Text>
         </TouchableOpacity>
 
       </ScrollView>
-
     </LinearGradient>
-
   );
 }
 
 const styles = StyleSheet.create({
-
-  gradient:{
-    flex:1
+  gradient: {
+    flex: 1,
   },
 
-  profileContainer:{
-    alignItems:"center",
-    marginTop:20
+  profileContainer: {
+    alignItems: "center",
+    marginTop: 20,
+    marginBottom: 10,
   },
 
-  profileImage:{
-    width:120,
-    height:120,
-    borderRadius:60,
-    marginBottom:10
+  imageWrapper: {
+    position: "relative",
   },
 
-  name:{
-    fontSize:20,
-    fontWeight:"bold"
+  profileImage: {
+    width: 125,
+    height: 125,
+    borderRadius: 65,
+    borderWidth: 3,
+    borderColor: "#E8D9C8",
   },
 
-  meta:{
-    color:"#777"
+  verifiedBadge: {
+    position: "absolute",
+    bottom: 8,
+    right: 6,
+    backgroundColor: "#fff",
+    borderRadius: 20,
   },
 
-  card:{
-    backgroundColor:"#fff",
-    margin:16,
-    padding:16,
-    borderRadius:12,
-    elevation:3
+  premiumBadge: {
+    position: "absolute",
+    top: 8,
+    left: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#7A1120",
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
   },
 
-  label:{
-    fontSize:13,
-    color:"#777",
-    marginTop:10
+  badgeText: {
+    color: "#fff",
+    fontSize: 11,
+    fontWeight: "700",
   },
 
-  value:{
-    fontSize:16,
-    fontWeight:"600"
+  name: {
+    fontSize: 22,
+    fontWeight: "800",
+    marginTop: 12,
+    color: "#7A1120",
   },
 
-  lockCard:{
-    backgroundColor:"#fff",
-    marginHorizontal:16,
-    padding:16,
-    borderRadius:12,
-    elevation:3
+  meta: {
+    color: "#777",
+    marginTop: 4,
+    fontSize: 14,
   },
 
-  lockRow:{
-    flexDirection:"row",
-    alignItems:"center",
-    marginVertical:5
+  topButtonRow: {
+    flexDirection: "row",
+    marginTop: 14,
   },
 
-  lockText:{
-    marginLeft:8,
-    color:"#FF6B00",
-    fontWeight:"600"
+  shareBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F5E6D3",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 24,
+    marginRight: 10,
   },
 
-  unlockButton:{
-    backgroundColor:"#FF6B00",
-    margin:20,
-    paddingVertical:14,
-    borderRadius:30,
-    alignItems:"center"
+  saveBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F5E6D3",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 24,
   },
 
-  unlockText:{
-    color:"#fff",
-    fontSize:16,
-    fontWeight:"bold"
-  }
+  shareText: {
+    color: "#7A1120",
+    fontSize: 13,
+    fontWeight: "700",
+  },
 
+  card: {
+    backgroundColor: "#fff",
+    margin: 16,
+    padding: 16,
+    borderRadius: 16,
+    elevation: 2,
+  },
+
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#7A1120",
+    marginBottom: 10,
+  },
+
+  row: {
+    marginBottom: 12,
+  },
+
+  label: {
+    fontSize: 12,
+    color: "#888",
+  },
+
+  value: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#222",
+    marginTop: 2,
+  },
+
+  lockCard: {
+    backgroundColor: "#fff",
+    marginHorizontal: 16,
+    padding: 16,
+    borderRadius: 16,
+    elevation: 2,
+  },
+
+  lockRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 7,
+  },
+
+  lockText: {
+    marginLeft: 10,
+    color: "#7A1120",
+    fontWeight: "600",
+    fontSize: 14,
+  },
+
+  subscriptionCard: {
+    backgroundColor: "#FFF3E6",
+    marginHorizontal: 16,
+    marginTop: 16,
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#F4D7B5",
+  },
+
+  subTitle: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#7A1120",
+  },
+
+  subText: {
+    fontSize: 13,
+    color: "#555",
+    marginTop: 5,
+    lineHeight: 20,
+  },
+
+  unlockButton: {
+    backgroundColor: "#7A1120",
+    margin: 20,
+    paddingVertical: 15,
+    borderRadius: 30,
+    alignItems: "center",
+  },
+
+  unlockText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "800",
+  },
 });
