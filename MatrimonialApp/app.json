@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "भाग्यबंधन – नशिबाने जुळलेली जोडी",
-    "slug": "bhagyabandhan-matrimonial-app",
+    "slug": "MatrimonialApp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
