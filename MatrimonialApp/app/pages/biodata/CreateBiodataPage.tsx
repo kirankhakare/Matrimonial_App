@@ -23,8 +23,9 @@ import {
 } from "../../../services/biodataService";
 
 // ✅ ENV VARIABLES
-const CLOUD_NAME = process.env.EXPO_PUBLIC_CLOUD_NAME;
-const UPLOAD_PRESET = process.env.EXPO_PUBLIC_UPLOAD_PRESET;
+const CLOUD_NAME = process.env.EXPO_PUBLIC_CLOUD_NAME || "dslqvi4uo";
+const UPLOAD_PRESET =
+  process.env.EXPO_PUBLIC_UPLOAD_PRESET || "matrimonial_unsigned";
 
 export default function CreateBiodataPage() {
   const [loading, setLoading] = useState(true);
@@ -133,21 +134,12 @@ export default function CreateBiodataPage() {
     }
   };
 
- const uploadToCloudinary = async (imageUri: string) => {
+const uploadToCloudinary = async (imageUri: string) => {
   try {
-    if (!CLOUD_NAME || !UPLOAD_PRESET) {
-      Alert.alert(
-        "Cloudinary Config Missing",
-        "Please check your .env file for EXPO_PUBLIC_CLOUD_NAME and EXPO_PUBLIC_UPLOAD_PRESET"
-      );
-      return;
-    }
-
     setUploadingImage(true);
 
     const formData = new FormData();
 
-    // IMPORTANT: For Expo / React Native
     formData.append("file", {
       uri: imageUri,
       type: "image/jpeg",
@@ -155,7 +147,7 @@ export default function CreateBiodataPage() {
     } as any);
 
     formData.append("upload_preset", UPLOAD_PRESET);
-    formData.append("folder", "matrimony_profiles");
+    formData.append("folder", "matrimonial_profiles");
 
     console.log("Uploading to Cloudinary...");
     console.log("CLOUD_NAME:", CLOUD_NAME);
@@ -171,7 +163,6 @@ export default function CreateBiodataPage() {
     );
 
     const result = await response.json();
-
     console.log("Cloudinary Response:", result);
 
     if (response.ok && result.secure_url) {
