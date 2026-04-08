@@ -1,113 +1,176 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
-  ScrollView,
   StyleSheet,
+  FlatList,
+  ActivityIndicator,
   TouchableOpacity,
-  StatusBar,
+  Image,
 } from "react-native";
-import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { router } from "expo-router";
 
-import RecentBiodataSlider from "../../pages/home/RecentBiodataSlider";
 import BiodataCard from "../../components/biodata/BiodataCard";
-import AdvertisementRow from "../../components/ads/AdvertisementRow";
+import { getAllBiodata } from "../../../services/biodataService";
 
 export default function HomePage() {
+  const [data, setData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isSubscribed, setIsSubscribed] = useState(false);
 
   useEffect(() => {
+    fetchData();
     checkSubscription();
   }, []);
+
+  const fetchData = async () => {
+    try {
+      const res = await getAllBiodata();
+      setData(res.data || []);
+    } catch (error) {
+      console.log("Home Biodata Fetch Error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const checkSubscription = async () => {
     const sub = await AsyncStorage.getItem("isSubscribed");
     setIsSubscribed(sub === "true");
   };
 
-  // Recently Added Data
-  const recentData = [
-    {
-      id: 1,
-      name: "Shruti Verma",
-      age: 26,
-      city: "Thane | Mumbai",
-      image: require("../../../assets/resently/resently1.jpg"),
-      height: "5'1\"",
-      subcast: "Digambar",
-      profession: "Software Developer",
-      isPremium: true,
-      isVerified: true,
-    },
-    {
-      id: 2,
-      name: "Pooja Deshmukh",
-      age: 24,
-      city: "Pune",
-      image: require("../../../assets/resently/resently2.jpg"),
-      height: "5'3\"",
-      subcast: "Maratha",
-      profession: "Teacher",
-      isPremium: false,
-      isVerified: true,
-    },
-  ];
-
-  // All Profiles
-  const biodata = [
-    { id: 1, name: "Rahul Patil", age: 28, city: "Pune", profession: "Engineer", image: require("../../../assets/resently/resently1.jpg")},
-    
-    { id: 2, name: "Amit Sharma", age: 30, city: "Mumbai", profession: "Doctor" , image: require("../../../assets/resently/resently2.jpg")},
-  ];
-
-  const handleView = (id: number) => {
+  const handleViewProfile = (item: any) => {
     if (!isSubscribed) {
-      router.push("/subscription"); // 🔒 redirect
-    } else {
-      router.push(`/details/${id}`); // ✅ open profile
+      router.push("/subscription/SubscriptionPage");
+      return;
     }
+
+    router.push(`/details/${item._id}`);
   };
 
+  const featured = data.slice(0, 5);
+
+ const getAge = (dob?: string) => {
+  if (!dob) return null;
+
+  try {
+    let birthDate: Date;
+
+    // format: YYYY-MM-DD
+    if (dob.includes("-") && dob.split("-")[0].length === 4) {
+      birthDate = new Date(dob);
+    }
+    // format: DD/MM/YYYY
+    else if (dob.includes("/")) {
+      const [day, month, year] = dob.split("/");
+      birthDate = new Date(Number(year), Number(month) - 1, Number(day));
+    }
+    // format: DD-MM-YYYY
+    else if (dob.includes("-")) {
+      const [day, month, year] = dob.split("-");
+      birthDate = new Date(Number(year), Number(month) - 1, Number(day));
+    } else {
+      return null;
+    }
+
+    if (isNaN(birthDate.getTime())) return null;
+
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
+      age--;
+    }
+
+    return age;
+  } catch (error) {
+    return null;
+  }
+};
+
+  if (loading) {
+    return (
+      <View style={styles.loader}>
+        <ActivityIndicator size="large" color="#7A1120" />
+      </View>
+    );
+  }
+
   return (
-    <LinearGradient colors={["#FFF8F2", "#FFFFFF"]} style={styles.container}>
-      <StatusBar barStyle="dark-content" translucent />
+    <LinearGradient
+      colors={["#FFF8F2", "#FFFFFF", "#FFF9F4"]}
+      style={styles.container}
+    >
+      <FlatList
+        data={data}
+        keyExtractor={(item) => item._id}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 30, paddingTop: 18 }}
+        ListHeaderComponent={
+          <>
+            {/* FEATURED SECTION */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Recently Added Profiles</Text>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
-        
-        {/* 🔥 RECENTLY ADDED FULL IMAGE SLIDER */}
-        <RecentBiodataSlider data={recentData} isSubscribed={isSubscribed} />
+              <FlatList
+                horizontal
+                data={featured}
+                keyExtractor={(item) => item._id}
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingVertical: 10 }}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={styles.featuredCard}
+                    activeOpacity={0.9}
+                    onPress={() => handleViewProfile(item)}
+                  >
+                    <Image
+                      source={
+                        item.image
+                          ? { uri: item.image }
+                          : require("../../../assets/resently/resently1.jpg")
+                      }
+                      style={styles.featuredImage}
+                    />
+                    <View style={styles.overlay}>
+                      <Text style={styles.featuredName}>{item.name}</Text>
+                      <Text style={styles.featuredMeta}>
+                        {getAge(item.dob) || "Age N/A"} • {item.placeOfBirth || "-"}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
+              />
+            </View>
 
-        {/* 🔽 ALL PROFILES */}
-        <Text style={styles.title}>सर्व प्रोफाइल्स</Text>
-
-        {biodata.map((item) => (
+            {/* ALL PROFILES TITLE */}
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>All Profiles</Text>
+              <TouchableOpacity onPress={() => router.push("/biodata/all")}>
+                <Text style={styles.viewAll}>View All</Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        }
+        renderItem={({ item }) => (
           <BiodataCard
-            key={item.id}
             data={item}
             isSubscribed={isSubscribed}
-            onView={() => handleView(item.id)}
+            onView={() => handleViewProfile(item)}
           />
-        ))}
-
-        {/* VIEW ALL */}
-        <TouchableOpacity
-          style={styles.viewAllBtn}
-          onPress={() => {
-            if (!isSubscribed) {
-              router.push("/subscription");
-            } else {
-              router.push("/biodata/all");
-            }
-          }}
-        >
-          <Text style={styles.viewAllText}>View All Profiles</Text>
-        </TouchableOpacity>
-
-        {/* ADS */}
-        <AdvertisementRow />
-      </ScrollView>
+        )}
+        ListEmptyComponent={
+          <View style={styles.empty}>
+            <Text style={styles.emptyText}>No biodata found yet</Text>
+          </View>
+        }
+      />
     </LinearGradient>
   );
 }
@@ -115,29 +178,82 @@ export default function HomePage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingHorizontal: 16,
   },
 
-  title: {
-    fontSize: 18,
-    fontWeight: "800",
-    marginHorizontal: 16,
-    marginTop: 18,
+  loader: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FFF8F2",
+  },
+
+  section: {
+    marginTop: 6,
     marginBottom: 10,
-    color: "#222",
   },
 
-  viewAllBtn: {
-    backgroundColor: "#7A1120",
-    marginHorizontal: 20,
-    marginVertical: 18,
-    paddingVertical: 13,
-    borderRadius: 30,
+  sectionHeader: {
+    marginTop: 18,
+    marginBottom: 14,
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
   },
 
-  viewAllText: {
-    color: "#fff",
-    fontSize: 15,
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#7A1120",
+  },
+
+  viewAll: {
+    color: "#7A1120",
     fontWeight: "700",
+    fontSize: 15,
+  },
+
+  featuredCard: {
+    width: 220,
+    height: 280,
+    marginRight: 14,
+    borderRadius: 22,
+    overflow: "hidden",
+    backgroundColor: "#eee",
+  },
+
+  featuredImage: {
+    width: "100%",
+    height: "100%",
+  },
+
+  overlay: {
+    position: "absolute",
+    bottom: 0,
+    width: "100%",
+    padding: 14,
+    backgroundColor: "rgba(0,0,0,0.35)",
+  },
+
+  featuredName: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "800",
+  },
+
+  featuredMeta: {
+    color: "#fff",
+    fontSize: 13,
+    marginTop: 4,
+  },
+
+  empty: {
+    alignItems: "center",
+    marginTop: 50,
+  },
+
+  emptyText: {
+    color: "#777",
+    fontSize: 15,
   },
 });

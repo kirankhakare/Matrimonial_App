@@ -1,21 +1,19 @@
-import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-} from "react-native";
-import { Ionicons, MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
+import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 type BiodataType = {
-  id: number;
+  _id?: string;
+  id?: number;
   name: string;
-  age: number;
-  city: string;
-  profession: string;
-  image?: any;
+  age?: number;
+  dob?: string;
+  city?: string;
+  placeOfBirth?: string;
+  profession?: string;
+  job?: string;
+  image?: string | any;
   height?: string;
+  caste?: string;
   subcast?: string;
   isPremium?: boolean;
   isVerified?: boolean;
@@ -32,166 +30,167 @@ export default function BiodataCard({
   isSubscribed = false,
   onView,
 }: Props) {
+  const displayCity = data.city || data.placeOfBirth || "-";
+  const displayJob = data.profession || data.job || "-";
+  const displayCaste = data.subcast || data.caste || "-";
+
+ const getAge = (dob?: string) => {
+  if (!dob) return null;
+
+  try {
+    let birthDate: Date;
+
+    // format: YYYY-MM-DD
+    if (dob.includes("-") && dob.split("-")[0].length === 4) {
+      birthDate = new Date(dob);
+    }
+    // format: DD/MM/YYYY
+    else if (dob.includes("/")) {
+      const [day, month, year] = dob.split("/");
+      birthDate = new Date(Number(year), Number(month) - 1, Number(day));
+    }
+    // format: DD-MM-YYYY
+    else if (dob.includes("-")) {
+      const [day, month, year] = dob.split("-");
+      birthDate = new Date(Number(year), Number(month) - 1, Number(day));
+    } else {
+      return null;
+    }
+
+    if (isNaN(birthDate.getTime())) return null;
+
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
+      age--;
+    }
+
+    return age;
+  } catch (error) {
+    return null;
+  }
+};
+
+  const displayAge = data.age || getAge(data.dob);
+
   return (
-    <View style={styles.card}>
-      {/* LEFT SIDE IMAGE */}
+    <TouchableOpacity activeOpacity={0.9} style={styles.card} onPress={onView}>
       <Image
-        source={data.image || require("../../../assets/resently/resently1.jpg")}
+        source={
+          typeof data.image === "string" && data.image
+            ? { uri: data.image }
+            : data.image
+            ? data.image
+            : require("../../../assets/resently/resently1.jpg")
+        }
         style={styles.image}
       />
 
-      {/* RIGHT SIDE INFO */}
-      <View style={styles.infoContainer}>
-        <View style={styles.nameRow}>
-          <Text style={styles.name}>
-            {data.name}, {data.age}
+      <View style={styles.info}>
+        <View style={styles.topRow}>
+          <Text style={styles.name}>{data.name}</Text>
+
+          <View style={styles.badges}>
+            {data.isVerified && (
+              <Ionicons name="checkmark-circle" size={18} color="#22C55E" />
+            )}
+            {data.isPremium && (
+              <Ionicons name="diamond" size={16} color="#7A1120" />
+            )}
+          </View>
+        </View>
+
+        <Text style={styles.meta}>
+          {displayAge ? `${displayAge} yrs` : "Age N/A"} • {displayCity}
+        </Text>
+
+        <Text style={styles.detail}>• {displayJob}</Text>
+        <Text style={styles.detail}>• {data.height || "-"}</Text>
+        <Text style={styles.detail}>• {displayCaste}</Text>
+
+        <TouchableOpacity style={styles.button} onPress={onView}>
+          <Text style={styles.buttonText}>
+            {isSubscribed ? "View Full Profile" : "View Profile"}
           </Text>
-
-          {data.isVerified && (
-            <Ionicons name="checkmark-circle" size={18} color="#1D9BF0" />
-          )}
-        </View>
-
-        <View style={styles.infoRow}>
-          <MaterialIcons name="straighten" size={15} color="#A48C6A" />
-          <Text style={styles.infoText}>Height: {data.height || "N/A"}</Text>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Ionicons name="sparkles" size={14} color="#A48C6A" />
-          <Text style={styles.infoText}>Subcast: {data.subcast || "N/A"}</Text>
-        </View>
-
-        <View style={styles.infoRow}>
-          <FontAwesome5 name="briefcase" size={13} color="#A48C6A" />
-          <Text style={styles.infoText}>Profession: {data.profession}</Text>
-        </View>
-
-        <View style={styles.infoRow}>
-          <Ionicons name="location-sharp" size={15} color="#D94A6A" />
-          <Text style={styles.infoText}>Location: {data.city}</Text>
-        </View>
-
-        {!isSubscribed && (
-          <Text style={styles.lockText}>
-            🔒 Full details after subscription
-          </Text>
-        )}
-
-        {/* BUTTONS */}
-        <View style={styles.buttonRow}>
-          <TouchableOpacity style={styles.viewBtn} onPress={onView}>
-            <Text style={styles.viewBtnText}>View More</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.saveBtn}>
-            <Ionicons name="heart-outline" size={17} color="#7A1120" />
-            <Text style={styles.saveText}> Save</Text>
-          </TouchableOpacity>
-        </View>
+        </TouchableOpacity>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#fff",
-    borderRadius: 22,
-    marginHorizontal: 16,
-    marginBottom: 16,
     flexDirection: "row",
+    backgroundColor: "#fff",
+    borderRadius: 18,
+    marginBottom: 14,
     overflow: "hidden",
+    elevation: 3,
     shadowColor: "#000",
-    shadowOpacity: 0.07,
-    shadowRadius: 10,
-    elevation: 4,
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
   },
 
   image: {
-    width: 125,
-    height: "100%",
-    minHeight: 220,
-    resizeMode: "cover",
+    width: 120,
+    height: 160,
   },
 
-  infoContainer: {
+  info: {
     flex: 1,
     padding: 14,
     justifyContent: "space-between",
   },
 
-  nameRow: {
+  topRow: {
     flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 10,
+  },
+
+  badges: {
+    flexDirection: "row",
     gap: 6,
-    flexWrap: "wrap",
   },
 
   name: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: "800",
-    color: "#1D1D1D",
-  },
-
-  infoRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 7,
-  },
-
-  infoText: {
-    fontSize: 14,
-    color: "#4B4B4B",
-    marginLeft: 8,
-    fontWeight: "500",
-    flexShrink: 1,
-  },
-
-  lockText: {
-    marginTop: 8,
-    color: "#B8860B",
-    fontSize: 12,
-    fontWeight: "700",
-  },
-
-  buttonRow: {
-    flexDirection: "row",
-    marginTop: 14,
-    alignItems: "center",
-  },
-
-  viewBtn: {
-    backgroundColor: "#7A1120",
-    paddingVertical: 11,
-    paddingHorizontal: 18,
-    borderRadius: 24,
+    color: "#7A1120",
     flex: 1,
-    marginRight: 10,
+    paddingRight: 8,
+  },
+
+  meta: {
+    fontSize: 13,
+    color: "#777",
+    marginTop: 4,
+    marginBottom: 10,
+  },
+
+  detail: {
+    fontSize: 13,
+    color: "#444",
+    marginBottom: 4,
+    fontWeight: "500",
+  },
+
+  button: {
+    marginTop: 12,
+    backgroundColor: "#7A1120",
+    paddingVertical: 10,
+    borderRadius: 12,
     alignItems: "center",
   },
 
-  viewBtnText: {
+  buttonText: {
     color: "#fff",
     fontWeight: "700",
-    fontSize: 14,
-  },
-
-  saveBtn: {
-    borderWidth: 1.2,
-    borderColor: "#D5B9B9",
-    borderRadius: 24,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#fff",
-  },
-
-  saveText: {
-    color: "#7A1120",
-    fontWeight: "600",
     fontSize: 13,
   },
 });
