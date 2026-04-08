@@ -133,55 +133,67 @@ export default function CreateBiodataPage() {
     }
   };
 
-  const uploadToCloudinary = async (imageUri: string) => {
-    try {
-      if (!CLOUD_NAME || !UPLOAD_PRESET) {
-        Alert.alert(
-          "Cloudinary Config Missing",
-          "Please check your .env file for EXPO_PUBLIC_CLOUD_NAME and EXPO_PUBLIC_UPLOAD_PRESET"
-        );
-        return;
-      }
-
-      setUploadingImage(true);
-
-      const data = new FormData();
-      data.append("file", {
-        uri: imageUri,
-        type: "image/jpeg",
-        name: "profile.jpg",
-      } as any);
-
-      data.append("upload_preset", UPLOAD_PRESET);
-
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-        {
-          method: "POST",
-          body: data,
-        }
+ const uploadToCloudinary = async (imageUri: string) => {
+  try {
+    if (!CLOUD_NAME || !UPLOAD_PRESET) {
+      Alert.alert(
+        "Cloudinary Config Missing",
+        "Please check your .env file for EXPO_PUBLIC_CLOUD_NAME and EXPO_PUBLIC_UPLOAD_PRESET"
       );
-
-      const result = await res.json();
-
-      if (result.secure_url) {
-        setForm((prev) => ({
-          ...prev,
-          image: result.secure_url,
-        }));
-
-        Alert.alert("Success", "Image uploaded successfully ✅");
-      } else {
-        console.log("Cloudinary Error:", result);
-        Alert.alert("Upload Failed", "Could not upload image");
-      }
-    } catch (error) {
-      console.log("Cloudinary Upload Error:", error);
-      Alert.alert("Error", "Image upload failed");
-    } finally {
-      setUploadingImage(false);
+      return;
     }
-  };
+
+    setUploadingImage(true);
+
+    const formData = new FormData();
+
+    // IMPORTANT: For Expo / React Native
+    formData.append("file", {
+      uri: imageUri,
+      type: "image/jpeg",
+      name: `profile_${Date.now()}.jpg`,
+    } as any);
+
+    formData.append("upload_preset", UPLOAD_PRESET);
+    formData.append("folder", "matrimony_profiles");
+
+    console.log("Uploading to Cloudinary...");
+    console.log("CLOUD_NAME:", CLOUD_NAME);
+    console.log("UPLOAD_PRESET:", UPLOAD_PRESET);
+    console.log("IMAGE_URI:", imageUri);
+
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    const result = await response.json();
+
+    console.log("Cloudinary Response:", result);
+
+    if (response.ok && result.secure_url) {
+      setForm((prev) => ({
+        ...prev,
+        image: result.secure_url,
+      }));
+
+      Alert.alert("Success", "Image uploaded successfully ✅");
+    } else {
+      Alert.alert(
+        "Upload Failed",
+        result?.error?.message || "Could not upload image"
+      );
+    }
+  } catch (error) {
+    console.log("Cloudinary Upload Error:", error);
+    Alert.alert("Error", "Image upload failed");
+  } finally {
+    setUploadingImage(false);
+  }
+};
 
   const handleSubmit = async () => {
     try {
