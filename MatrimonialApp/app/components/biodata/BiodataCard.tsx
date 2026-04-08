@@ -1,226 +1,197 @@
-import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
-import { router } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+} from "react-native";
+import { Ionicons, MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
 
-type Biodata = {
+type BiodataType = {
   id: number;
   name: string;
   age: number;
   city: string;
   profession: string;
-  image?: string;
+  image?: any;
+  height?: string;
+  subcast?: string;
   isPremium?: boolean;
   isVerified?: boolean;
 };
 
 type Props = {
-  data: Biodata;
+  data: BiodataType;
+  isSubscribed?: boolean;
+  onView?: () => void;
 };
 
-export default function BiodataCard({ data }: Props) {
-  const handleView = () => {
-    router.push({
-      pathname: "/details/[id]",
-      params: { id: data.id.toString() },
-    });
-  };
-
-  // 🔒 Privacy Mask
-  const maskedName = data.name ? `${data.name[0]}***` : "User";
-
+export default function BiodataCard({
+  data,
+  isSubscribed = false,
+  onView,
+}: Props) {
   return (
-    <TouchableOpacity
-      style={styles.card}
-      activeOpacity={0.92}
-      onPress={handleView}
-    >
-      {/* IMAGE SECTION */}
-      <View style={styles.imageWrapper}>
-        <Image
-          source={{
-            uri:
-              data.image ||
-              "https://randomuser.me/api/portraits/men/1.jpg",
-          }}
-          style={styles.image}
-        />
+    <View style={styles.card}>
+      {/* LEFT SIDE IMAGE */}
+      <Image
+        source={data.image || require("../../../assets/resently/resently1.jpg")}
+        style={styles.image}
+      />
 
-        {/* Premium Badge */}
-        {data.isPremium && (
-          <View style={styles.premiumBadge}>
-            <Ionicons name="lock-closed" size={11} color="#fff" />
-            <Text style={styles.badgeText}> Premium</Text>
-          </View>
-        )}
-
-        {/* Verified Badge */}
-        {data.isVerified && (
-          <View style={styles.verifiedBadge}>
-            <Ionicons name="checkmark-circle" size={18} color="#22C55E" />
-          </View>
-        )}
-      </View>
-
-      {/* INFO SECTION */}
-      <View style={styles.info}>
-        <Text style={styles.name}>{maskedName}</Text>
-
-        <Text style={styles.meta}>
-          {data.age} yrs • {data.city}
-        </Text>
-
-        <Text style={styles.profession}>{data.profession}</Text>
-
-        {/* Locked Info */}
-        <View style={styles.lockBox}>
-          <Ionicons name="lock-closed-outline" size={14} color="#7A1120" />
-          <Text style={styles.lockText}>
-            Contact & full biodata locked
+      {/* RIGHT SIDE INFO */}
+      <View style={styles.infoContainer}>
+        <View style={styles.nameRow}>
+          <Text style={styles.name}>
+            {data.name}, {data.age}
           </Text>
+
+          {data.isVerified && (
+            <Ionicons name="checkmark-circle" size={18} color="#1D9BF0" />
+          )}
         </View>
 
-        {/* Buttons */}
+        <View style={styles.infoRow}>
+          <MaterialIcons name="straighten" size={15} color="#A48C6A" />
+          <Text style={styles.infoText}>Height: {data.height || "N/A"}</Text>
+        </View>
+
+        <View style={styles.infoRow}>
+          <Ionicons name="sparkles" size={14} color="#A48C6A" />
+          <Text style={styles.infoText}>Subcast: {data.subcast || "N/A"}</Text>
+        </View>
+
+        <View style={styles.infoRow}>
+          <FontAwesome5 name="briefcase" size={13} color="#A48C6A" />
+          <Text style={styles.infoText}>Profession: {data.profession}</Text>
+        </View>
+
+        <View style={styles.infoRow}>
+          <Ionicons name="location-sharp" size={15} color="#D94A6A" />
+          <Text style={styles.infoText}>Location: {data.city}</Text>
+        </View>
+
+        {!isSubscribed && (
+          <Text style={styles.lockText}>
+            🔒 Full details after subscription
+          </Text>
+        )}
+
+        {/* BUTTONS */}
         <View style={styles.buttonRow}>
-          <TouchableOpacity style={styles.viewBtn} onPress={handleView}>
-            <Text style={styles.viewBtnText}>View</Text>
+          <TouchableOpacity style={styles.viewBtn} onPress={onView}>
+            <Text style={styles.viewBtnText}>View More</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.unlockBtn}>
-            <Text style={styles.unlockBtnText}>Unlock</Text>
+          <TouchableOpacity style={styles.saveBtn}>
+            <Ionicons name="heart-outline" size={17} color="#7A1120" />
+            <Text style={styles.saveText}> Save</Text>
           </TouchableOpacity>
         </View>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    flexDirection: "row",
     backgroundColor: "#fff",
-    marginBottom: 16,
+    borderRadius: 22,
     marginHorizontal: 16,
-    borderRadius: 18,
-    padding: 10,
-    alignItems: "center",
-
+    marginBottom: 16,
+    flexDirection: "row",
+    overflow: "hidden",
     shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.07,
+    shadowRadius: 10,
     elevation: 4,
   },
 
-  imageWrapper: {
-    position: "relative",
-  },
-
   image: {
-    width: 96,
-    height: 110,
-    borderRadius: 16,
-    backgroundColor: "#f2f2f2",
+    width: 125,
+    height: "100%",
+    minHeight: 220,
+    resizeMode: "cover",
   },
 
-  premiumBadge: {
-    position: "absolute",
-    top: 6,
-    left: 6,
+  infoContainer: {
+    flex: 1,
+    padding: 14,
+    justifyContent: "space-between",
+  },
+
+  nameRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#7A1120",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 20,
-  },
-
-  badgeText: {
-    color: "#fff",
-    fontSize: 10,
-    fontWeight: "700",
-  },
-
-  verifiedBadge: {
-    position: "absolute",
-    bottom: 6,
-    right: 6,
-    backgroundColor: "#fff",
-    borderRadius: 20,
-    padding: 2,
-  },
-
-  info: {
-    flex: 1,
-    marginLeft: 12,
-    justifyContent: "center",
+    marginBottom: 10,
+    gap: 6,
+    flexWrap: "wrap",
   },
 
   name: {
-    fontSize: 17,
+    fontSize: 22,
     fontWeight: "800",
-    color: "#7A1120",
+    color: "#1D1D1D",
   },
 
-  meta: {
-    color: "#777",
-    marginTop: 3,
-    fontSize: 13,
-  },
-
-  profession: {
-    marginTop: 5,
-    fontSize: 14,
-    color: "#444",
-    fontWeight: "500",
-  },
-
-  lockBox: {
+  infoRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFF3E6",
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 10,
-    marginTop: 10,
-    alignSelf: "flex-start",
+    marginBottom: 7,
+  },
+
+  infoText: {
+    fontSize: 14,
+    color: "#4B4B4B",
+    marginLeft: 8,
+    fontWeight: "500",
+    flexShrink: 1,
   },
 
   lockText: {
-    color: "#7A1120",
+    marginTop: 8,
+    color: "#B8860B",
     fontSize: 12,
-    fontWeight: "600",
-    marginLeft: 6,
+    fontWeight: "700",
   },
 
   buttonRow: {
     flexDirection: "row",
-    marginTop: 12,
+    marginTop: 14,
+    alignItems: "center",
   },
 
   viewBtn: {
-    backgroundColor: "#F5E6D3",
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    backgroundColor: "#7A1120",
+    paddingVertical: 11,
+    paddingHorizontal: 18,
     borderRadius: 24,
+    flex: 1,
     marginRight: 10,
+    alignItems: "center",
   },
 
   viewBtnText: {
-    color: "#7A1120",
-    fontSize: 13,
-    fontWeight: "700",
-  },
-
-  unlockBtn: {
-    backgroundColor: "#7A1120",
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 24,
-  },
-
-  unlockBtnText: {
     color: "#fff",
-    fontSize: 13,
     fontWeight: "700",
+    fontSize: 14,
+  },
+
+  saveBtn: {
+    borderWidth: 1.2,
+    borderColor: "#D5B9B9",
+    borderRadius: 24,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+  },
+
+  saveText: {
+    color: "#7A1120",
+    fontWeight: "600",
+    fontSize: 13,
   },
 });

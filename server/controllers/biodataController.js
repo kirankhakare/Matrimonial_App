@@ -1,56 +1,90 @@
-import Biodata from "../models/Biodata.js";
-import Payment from "../models/Payment.js";
+const Biodata = require("../models/Biodata");
 
-// CREATE
-export const createBiodata = async (req, res) => {
-  const data = await Biodata.create({
-    ...req.body,
-    userId: req.user.id
-  });
+// CREATE BIODATA
+const createBiodata = async (req, res) => {
+  try {
+    const biodata = new Biodata({
+      ...req.body,
+      user: req.user.id,
+    });
 
-  res.json(data);
-};
+    await biodata.save();
 
-// GET ALL (PUBLIC)
-export const getAllBiodata = async (req, res) => {
-  const data = await Biodata.find().sort({ createdAt: -1 });
-  res.json(data);
-};
-
-// GET SINGLE (LOCK LOGIC)
-export const getBiodataById = async (req, res) => {
-  const biodata = await Biodata.findById(req.params.id);
-
-  const hasPaid = await Payment.findOne({
-    userId: req.user?.id,
-    biodataId: req.params.id,
-    status: "SUCCESS"
-  });
-
-  if (!hasPaid) {
-    biodata.phone = "********";
-    biodata.address = "********";
+    res.status(201).json({
+      message: "Biodata created successfully",
+      biodata,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
-
-  res.json({
-    ...biodata._doc,
-    isUnlocked: !!hasPaid
-  });
 };
 
-// UPDATE
-export const updateBiodata = async (req, res) => {
-  const data = await Biodata.findByIdAndUpdate(
-    req.params.id,
-    req.body,
-    { new: true }
-  );
+// GET MY BIODATA
+const getMyBiodata = async (req, res) => {
+  try {
+    const biodata = await Biodata.findOne({ user: req.user.id });
 
-  res.json(data);
+    if (!biodata) {
+      return res.status(404).json({ message: "Biodata not found" });
+    }
+
+    res.status(200).json(biodata);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 };
 
-// DELETE
-export const deleteBiodata = async (req, res) => {
-  await Biodata.findByIdAndDelete(req.params.id);
-  res.json({ message: "Deleted" });
+// UPDATE MY BIODATA
+const updateMyBiodata = async (req, res) => {
+  try {
+    const biodata = await Biodata.findOneAndUpdate(
+      { user: req.user.id },
+      req.body,
+      { new: true }
+    );
+
+    if (!biodata) {
+      return res.status(404).json({ message: "Biodata not found" });
+    }
+
+    res.status(200).json({
+      message: "Biodata updated successfully",
+      biodata,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// GET ALL BIODATA
+const getAllBiodata = async (req, res) => {
+  try {
+    const biodata = await Biodata.find().sort({ createdAt: -1 });
+    res.status(200).json(biodata);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// GET SINGLE BIODATA
+const getBiodataById = async (req, res) => {
+  try {
+    const biodata = await Biodata.findById(req.params.id);
+
+    if (!biodata) {
+      return res.status(404).json({ message: "Biodata not found" });
+    }
+
+    res.status(200).json(biodata);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = {
+  createBiodata,
+  getMyBiodata,
+  updateMyBiodata,
+  getAllBiodata,
+  getBiodataById,
 };

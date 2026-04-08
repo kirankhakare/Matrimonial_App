@@ -1,21 +1,23 @@
-import express from "express";
-import {
-  createBiodata,
-  getAllBiodata,
-  getBiodataById,
-  updateBiodata,
-  deleteBiodata
-} from "../controllers/biodataController.js";
-
-import { authMiddleware } from "../middleware/authMiddleware.js";
-
+const express = require("express");
 const router = express.Router();
 
+const {
+  createBiodata,
+  getMyBiodata,
+  updateMyBiodata,
+  getAllBiodata,
+  getBiodataById,
+} = require("../controllers/biodataController");
+
+const authMiddleware = require("../middleware/authMiddleware");
+
+// Protected routes
+router.post("/create", authMiddleware, createBiodata);
+router.get("/my", authMiddleware, getMyBiodata);
+router.put("/update", authMiddleware, updateMyBiodata);
+
+// Public routes
 router.get("/", getAllBiodata);
-router.get("/:id", authMiddleware, getBiodataById);
+router.get("/:id", getBiodataById);
 
-router.post("/", authMiddleware, createBiodata);
-router.put("/:id", authMiddleware, updateBiodata);
-router.delete("/:id", authMiddleware, deleteBiodata);
-
-export default router;
+module.exports = router;

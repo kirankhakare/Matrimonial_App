@@ -15,32 +15,56 @@ import { useState } from "react";
 import { loginUser } from "../../services/authService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
-
+import API from "../../services/api";
 export default function Login() {
   const [form, setForm] = useState({
     email: "",
     password: "",
   });
 
-  const handleLogin = async () => {
-    if (!form.email || !form.password) {
-      alert("Please fill all fields");
-      return;
-    }
+const handleLogin = async () => {
+  if (!form.email || !form.password) {
+    alert("Please fill all fields");
+    return;
+  }
 
+  try {
+    const res = await loginUser(form);
+
+    const token = res.data.token;
+    const user = res.data.user;
+
+    await AsyncStorage.setItem("token", token);
+    await AsyncStorage.setItem("user", JSON.stringify(user));
+
+    // 🔍 Check if biodata exists
     try {
-      const res = await loginUser(form);
+      const biodataRes = await API.get("/biodata/my", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-      await AsyncStorage.setItem("token", res.data.token);
-      await AsyncStorage.setItem("user", JSON.stringify(res.data.user));
-
-      alert("Login Successful ✅");
-      router.replace("/(tabs)");
-    } catch (error) {
-      alert("Invalid Email or Password ❌");
-      console.log(error);
+      if (biodataRes.data) {
+        alert("Login Successful ✅");
+        router.replace("/(tabs)");
+      } else {
+        router.replace("/create-biodata");
+      }
+    } catch (biodataError: any) {
+      if (biodataError.response?.status === 404) {
+        alert("Please complete your biodata first 📝");
+        router.replace("/create-biodata");
+      } else {
+        console.log("Biodata check error:", biodataError);
+        alert("Something went wrong while checking biodata");
+      }
     }
-  };
+  } catch (error) {
+    alert("Invalid Email or Password ❌");
+    console.log(error);
+  }
+};
 
   return (
     <SafeAreaView style={styles.safeArea}>

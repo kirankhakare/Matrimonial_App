@@ -2,97 +2,140 @@ import React from "react";
 import {
   View,
   Text,
-  Image,
   ScrollView,
+  StyleSheet,
+  Image,
+  Dimensions,
   TouchableOpacity,
-  StyleSheet
 } from "react-native";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
 
-type RecentBiodataSliderProps = {
-  data: {
-    id: number;
-    name: string;
-    age: number;
-    city: string;
-    photo: string;
-    isPremium?: boolean;
-    isVerified?: boolean;
-  }[];
+const { width } = Dimensions.get("window");
+
+type BiodataItem = {
+  id: number;
+  name: string;
+  age: number;
+  city: string;
+  image: any;
+  height: string;
+  subcast: string;
+  profession: string;
+  isPremium?: boolean;
+  isVerified?: boolean;
+};
+
+type Props = {
+  data: BiodataItem[];
+  isSubscribed?: boolean;
+};
+
+const formatName = (fullName: string) => {
+  const parts = fullName.trim().split(" ");
+  if (parts.length === 1) return parts[0];
+  return `${parts[0]} ${parts[1].charAt(0)}.`;
 };
 
 export default function RecentBiodataSlider({
   data,
-}: RecentBiodataSliderProps) {
+  isSubscribed = false,
+}: Props) {
+  const handleCardPress = (id: number) => {
+    if (!isSubscribed) {
+      router.push("/subscription");
+    } else {
+      router.push(`/details/${id}`);
+    }
+  };
+
+  const handleViewAll = () => {
+    if (!isSubscribed) {
+      router.push("/subscription");
+    } else {
+      router.push("/biodata/all");
+    }
+  };
+
   return (
-    <View style={styles.container}>
-
-      {/* Section Header */}
+    <View style={styles.wrapper}>
+      {/* Header */}
       <View style={styles.headerRow}>
-        <Text style={styles.title}>Recently Added ✨</Text>
+        <Text style={styles.sectionTitle}>Recently Added</Text>
 
-        <TouchableOpacity onPress={() => router.push("/biodata/all")}>
+        <TouchableOpacity onPress={handleViewAll}>
           <Text style={styles.viewAll}>View All</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Horizontal Cards */}
+      {/* Horizontal Scroll */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingRight: 10 }}
+        contentContainerStyle={styles.scrollContent}
       >
         {data.map((item) => (
           <TouchableOpacity
             key={item.id}
+            activeOpacity={0.92}
             style={styles.card}
-            activeOpacity={0.9}
-            onPress={() => router.push(`/details/${item.id}`)}
+            onPress={() => handleCardPress(item.id)}
           >
+            <Image source={item.image} style={styles.image} />
 
-            {/* Image Wrapper */}
-            <View style={styles.imageWrapper}>
-              <Image
-                source={{ uri: item.photo }}
-                style={styles.image}
-              />
+            {/* Premium Badge */}
+            {item.isPremium && (
+              <View style={styles.premiumBadge}>
+                <Ionicons name="diamond" size={12} color="#fff" />
+                <Text style={styles.premiumText}>Premium</Text>
+              </View>
+            )}
 
-              {/* Top Badges */}
-              <View style={styles.badgeRow}>
-                <View style={styles.newBadge}>
-                  <Text style={styles.badgeText}>New</Text>
-                </View>
+            {/* Dark Overlay */}
+            <View style={styles.overlay} />
 
-                {item.isPremium && (
-                  <View style={styles.premiumBadge}>
-                    <Ionicons name="lock-closed" size={10} color="#fff" />
-                    <Text style={styles.badgeText}> Premium</Text>
-                  </View>
+            {/* Bottom Details */}
+            <View style={styles.infoContainer}>
+              <View style={styles.nameRow}>
+                <Text style={styles.name}>
+                  {formatName(item.name)}, {item.age}
+                </Text>
+
+                {item.isVerified && (
+                  <MaterialIcons
+                    name="verified"
+                    size={18}
+                    color="#3B82F6"
+                    style={{ marginLeft: 6 }}
+                  />
                 )}
               </View>
 
-              {/* Verified Badge */}
-              {item.isVerified && (
-                <View style={styles.verifiedBadge}>
-                  <Ionicons name="checkmark-circle" size={14} color="#22C55E" />
+              <Text style={styles.detailsText}>
+                {item.height} • {item.subcast} • {item.profession}
+              </Text>
+
+              <Text style={styles.cityText}>{item.city}</Text>
+
+              {/* Bottom Tags */}
+              <View style={styles.tagRow}>
+                <View style={styles.tag}>
+                  <View style={styles.onlineDot} />
+                  <Text style={styles.tagText}>Online</Text>
                 </View>
-              )}
-            </View>
 
-            {/* Info */}
-            <View style={styles.infoBox}>
-              <Text style={styles.name}>
-                {item.name[0]}***
-              </Text>
+                <View style={styles.tag}>
+                  <Ionicons name="sparkles" size={12} color="#F5B301" />
+                  <Text style={styles.tagText}>Astro</Text>
+                </View>
 
-              <Text style={styles.info}>
-                {item.age} yrs
-              </Text>
-
-              <Text style={styles.city}>
-                📍 {item.city}
-              </Text>
+                {!isSubscribed && (
+                  <View style={styles.lockTag}>
+                    <Ionicons name="lock-closed" size={12} color="#fff" />
+                    <Text style={styles.lockTagText}>Locked</Text>
+                  </View>
+                )}
+              </View>
             </View>
           </TouchableOpacity>
         ))}
@@ -102,111 +145,159 @@ export default function RecentBiodataSlider({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    marginTop: 14,
-    marginBottom: 10,
+  wrapper: {
+    marginTop: 10,
+    marginBottom: 16,
   },
 
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 14,
     paddingHorizontal: 2,
   },
 
-  title: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#222",
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#1E1E1E",
   },
 
   viewAll: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: "#FF6B00",
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#B8860B",
+  },
+
+  scrollContent: {
+    paddingRight: 12,
   },
 
   card: {
-    width: 145,
-    marginRight: 14,
-    backgroundColor: "#fff",
-    borderRadius: 18,
+    width: width * 0.78,
+    height: 380,
+    borderRadius: 28,
     overflow: "hidden",
+    marginRight: 16,
+    backgroundColor: "#eee",
+    elevation: 7,
     shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    elevation: 4,
-  },
-
-  imageWrapper: {
-    position: "relative",
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
   },
 
   image: {
     width: "100%",
-    height: 130,
+    height: "100%",
+    resizeMode: "cover",
   },
 
-  badgeRow: {
+  overlay: {
     position: "absolute",
-    top: 8,
-    left: 8,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-
-  newBadge: {
-    backgroundColor: "#22C55E",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 20,
+    bottom: 0,
+    width: "100%",
+    height: "45%",
+    backgroundColor: "rgba(0,0,0,0.52)",
   },
 
   premiumBadge: {
+    position: "absolute",
+    top: 16,
+    right: 16,
+    zIndex: 5,
+    backgroundColor: "#6D28D9",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FF6B00",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 20,
+    gap: 5,
   },
 
-  badgeText: {
-    fontSize: 10,
-    fontWeight: "600",
+  premiumText: {
     color: "#fff",
+    fontSize: 12,
+    fontWeight: "800",
   },
 
-  verifiedBadge: {
+  infoContainer: {
     position: "absolute",
-    top: 8,
-    right: 8,
-    backgroundColor: "#fff",
-    borderRadius: 20,
-    padding: 3,
+    bottom: 18,
+    left: 18,
+    right: 18,
   },
 
-  infoBox: {
-    padding: 10,
+  nameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 6,
+    flexWrap: "wrap",
   },
 
   name: {
-    fontSize: 14,
+    color: "#fff",
+    fontSize: 24,
+    fontWeight: "900",
+  },
+
+  detailsText: {
+    color: "#F3F3F3",
+    fontSize: 15,
+    fontWeight: "600",
+    marginBottom: 6,
+  },
+
+  cityText: {
+    color: "#fff",
+    fontSize: 17,
     fontWeight: "700",
-    color: "#222",
+    marginBottom: 12,
   },
 
-  info: {
-    fontSize: 12,
-    color: "#666",
-    marginTop: 2,
+  tagRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
   },
 
-  city: {
+  tag: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.15)",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 18,
+  },
+
+  lockTag: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(122,17,32,0.85)",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 18,
+  },
+
+  lockTagText: {
+    color: "#fff",
     fontSize: 12,
-    color: "#888",
-    marginTop: 3,
+    fontWeight: "700",
+    marginLeft: 5,
+  },
+
+  tagText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "700",
+    marginLeft: 5,
+  },
+
+  onlineDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#00D26A",
   },
 });

@@ -1,33 +1,63 @@
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  StatusBar,
+  Alert,
+} from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
-import Header from "../components/header/Header";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { router } from "expo-router";
 
 export default function Profile() {
+  const [isPremium, setIsPremium] = useState(false);
 
-  const isPremium = true; // 🔹 later backend varun yeil
+  useEffect(() => {
+    checkSubscription();
+  }, []);
+
+  const checkSubscription = async () => {
+    try {
+      const sub = await AsyncStorage.getItem("isSubscribed");
+      setIsPremium(sub === "true");
+    } catch (error) {
+      console.log("Subscription Check Error:", error);
+    }
+  };
+
+  const handleLogout = async () => {
+    await AsyncStorage.clear();
+    router.replace("/(auth)/login");
+  };
 
   return (
     <LinearGradient
       colors={["#FFF8F2", "#FFFFFF", "#FFF9F4"]}
       style={styles.gradient}
     >
+      <StatusBar
+        barStyle="dark-content"
+        translucent
+        backgroundColor="transparent"
+      />
 
-      {/* HEADER */}
-      <Header title="My Profile" showBack={false} showProfile={false} />
-
-      <ScrollView showsVerticalScrollIndicator={false}>
-
-        {/* PROFILE HEADER */}
-        <View style={styles.profileHeader}>
-
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 30 }}
+      >
+        {/* TOP SECTION */}
+        <View style={styles.topSection}>
           <View style={styles.avatarWrapper}>
             <Image
-              source={{ uri: "https://picsum.photos/200" }}
+              source={require("../../assets/resently/resently1.jpg")}
               style={styles.avatar}
             />
 
-            {/* Verified Badge */}
             <View style={styles.verifiedBadge}>
               <Ionicons name="checkmark-circle" size={22} color="#22C55E" />
             </View>
@@ -36,9 +66,22 @@ export default function Profile() {
           <Text style={styles.name}>Rahul Patil</Text>
           <Text style={styles.meta}>28 yrs • Pune</Text>
 
+          <View style={styles.statusRow}>
+            <View style={styles.statusTag}>
+              <Ionicons name="shield-checkmark" size={14} color="#fff" />
+              <Text style={styles.statusText}>Verified</Text>
+            </View>
+
+            {isPremium && (
+              <View style={styles.premiumTag}>
+                <Ionicons name="diamond" size={14} color="#fff" />
+                <Text style={styles.statusText}>Premium</Text>
+              </View>
+            )}
+          </View>
         </View>
 
-        {/* 🔥 SUBSCRIPTION CARD */}
+        {/* SUBSCRIPTION CARD */}
         <View style={styles.subscriptionCard}>
           <View style={{ flex: 1 }}>
             <Text style={styles.subTitle}>
@@ -48,11 +91,15 @@ export default function Profile() {
             <Text style={styles.subText}>
               {isPremium
                 ? "Valid till: 25 Mar 2027"
-                : "Unlock full biodata & contact details"}
+                : "Unlock full biodata, contact details and premium profiles"}
             </Text>
           </View>
 
-          <TouchableOpacity style={styles.subBtn}>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            style={styles.subBtn}
+            onPress={() => router.push("/subscription/SubscriptionPage")}
+          >
             <Text style={styles.subBtnText}>
               {isPremium ? "Renew" : "Buy ₹100"}
             </Text>
@@ -61,187 +108,269 @@ export default function Profile() {
 
         {/* PROFILE INFO */}
         <View style={styles.card}>
+          <Text style={styles.sectionTitle}>My Biodata</Text>
 
-          <View style={styles.row}>
-            <Text style={styles.label}>Profession</Text>
-            <Text style={styles.value}>Engineer</Text>
-          </View>
-
-          <View style={styles.row}>
-            <Text style={styles.label}>Education</Text>
-            <Text style={styles.value}>BE Mechanical</Text>
-          </View>
-
-          <View style={styles.row}>
-            <Text style={styles.label}>Religion</Text>
-            <Text style={styles.value}>Jain</Text>
-          </View>
-
+          <InfoRow label="Profession" value="Engineer" />
+          <InfoRow label="Education" value="BE Mechanical" />
+          <InfoRow label="Religion" value="Jain" />
+          <InfoRow label="Height" value={`5'8"`} />
+          <InfoRow label="City" value="Pune" />
         </View>
 
         {/* MENU */}
         <View style={styles.menuCard}>
+          <MenuItem
+            icon="create-outline"
+            text="Edit Biodata"
+            onPress={() => router.push("/create-biodata")}
+          />
 
-          <TouchableOpacity style={styles.menuItem}>
-            <Ionicons name="create-outline" size={20} color="#7A1120" />
-            <Text style={styles.menuText}>Edit Biodata</Text>
-          </TouchableOpacity>
+          <MenuItem
+            icon="card-outline"
+            text="Subscription Plan"
+            onPress={() => router.push("/subscription/SubscriptionPage")}
+          />
 
-          <TouchableOpacity style={styles.menuItem}>
-            <Ionicons name="card-outline" size={20} color="#7A1120" />
-            <Text style={styles.menuText}>Subscription Plan</Text>
-          </TouchableOpacity>
+          <MenuItem
+            icon="heart-outline"
+            text="Saved Profiles"
+            onPress={() => Alert.alert("Coming Soon", "Saved Profiles feature will be added soon")}
+          />
 
-          <TouchableOpacity style={styles.menuItem}>
-            <Ionicons name="heart-outline" size={20} color="#7A1120" />
-            <Text style={styles.menuText}>Saved Profiles</Text>
-          </TouchableOpacity>
+          <MenuItem
+            icon="eye-outline"
+            text="Viewed Profiles"
+            onPress={() => Alert.alert("Coming Soon", "Viewed Profiles feature will be added soon")}
+          />
 
-          <TouchableOpacity style={styles.menuItem}>
-            <Ionicons name="eye-outline" size={20} color="#7A1120" />
-            <Text style={styles.menuText}>Viewed Profiles</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.menuItem, { borderBottomWidth: 0 }]}>
-            <Ionicons name="log-out-outline" size={20} color="#DC2626" />
-            <Text style={[styles.menuText, { color: "#DC2626" }]}>
-              Logout
-            </Text>
-          </TouchableOpacity>
-
+          <MenuItem
+            icon="log-out-outline"
+            text="Logout"
+            danger
+            onPress={() => handleLogout()}
+            noBorder
+          />
         </View>
-
       </ScrollView>
-
     </LinearGradient>
   );
 }
 
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={styles.row}>
+      <Text style={styles.label}>{label}</Text>
+      <Text style={styles.value}>{value}</Text>
+    </View>
+  );
+}
+
+function MenuItem({
+  icon,
+  text,
+  onPress,
+  danger = false,
+  noBorder = false,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  text: string;
+  onPress: () => void;
+  danger?: boolean;
+  noBorder?: boolean;
+}) {
+  return (
+    <TouchableOpacity
+      activeOpacity={0.7}
+      style={[styles.menuItem, noBorder && { borderBottomWidth: 0 }]}
+      onPress={() => {
+        console.log(`${text} pressed`);
+        onPress();
+      }}
+    >
+      <Ionicons
+        name={icon}
+        size={20}
+        color={danger ? "#DC2626" : "#7A1120"}
+      />
+      <Text style={[styles.menuText, danger && { color: "#DC2626" }]}>
+        {text}
+      </Text>
+    </TouchableOpacity>
+  );
+}
+
 const styles = StyleSheet.create({
-
-  gradient:{
-    flex:1
+  gradient: {
+    flex: 1,
   },
 
-  profileHeader:{
-    alignItems:"center",
-    marginTop:20,
-    marginBottom:20
+  topSection: {
+    alignItems: "center",
+    paddingTop: 60,
+    paddingBottom: 26,
   },
 
-  avatarWrapper:{
-    position:"relative"
+  avatarWrapper: {
+    position: "relative",
   },
 
-  avatar:{
-    width:110,
-    height:110,
-    borderRadius:60,
-    borderWidth:3,
-    borderColor:"#E8D9C8"
+  avatar: {
+    width: 118,
+    height: 118,
+    borderRadius: 59,
+    borderWidth: 3,
+    borderColor: "#E8D9C8",
   },
 
-  verifiedBadge:{
-    position:"absolute",
-    bottom:5,
-    right:5,
-    backgroundColor:"#fff",
-    borderRadius:20
+  verifiedBadge: {
+    position: "absolute",
+    bottom: 6,
+    right: 6,
+    backgroundColor: "#fff",
+    borderRadius: 20,
   },
 
-  name:{
-    fontSize:20,
-    fontWeight:"800",
-    marginTop:10,
-    color:"#7A1120"
+  name: {
+    fontSize: 24,
+    fontWeight: "900",
+    marginTop: 14,
+    color: "#7A1120",
   },
 
-  meta:{
-    color:"#777",
-    marginTop:2
+  meta: {
+    color: "#777",
+    marginTop: 4,
+    fontSize: 14,
+    fontWeight: "600",
   },
 
-  subscriptionCard:{
-    flexDirection:"row",
-    alignItems:"center",
-    backgroundColor:"#FFF3E6",
-    marginHorizontal:16,
-    padding:14,
-    borderRadius:16,
-    marginBottom:16,
-    borderWidth:1,
-    borderColor:"#F4D7B5"
+  statusRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 14,
   },
 
-  subTitle:{
-    fontSize:15,
-    fontWeight:"700",
-    color:"#7A1120"
+  statusTag: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#22C55E",
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 20,
   },
 
-  subText:{
-    fontSize:12,
-    color:"#555",
-    marginTop:3
+  premiumTag: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#6D28D9",
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 20,
   },
 
-  subBtn:{
-    backgroundColor:"#7A1120",
-    paddingHorizontal:14,
-    paddingVertical:8,
-    borderRadius:8
+  statusText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "800",
+    marginLeft: 6,
   },
 
-  subBtnText:{
-    color:"#fff",
-    fontSize:12,
-    fontWeight:"700"
+  subscriptionCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFF3E6",
+    marginHorizontal: 16,
+    padding: 16,
+    borderRadius: 18,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#F4D7B5",
   },
 
-  card:{
-    backgroundColor:"#fff",
-    marginHorizontal:16,
-    padding:16,
-    borderRadius:14,
-    elevation:2
+  subTitle: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#7A1120",
   },
 
-  row:{
-    marginBottom:12
+  subText: {
+    fontSize: 13,
+    color: "#555",
+    marginTop: 5,
+    lineHeight: 20,
   },
 
-  label:{
-    fontSize:12,
-    color:"#888"
+  subBtn: {
+    backgroundColor: "#7A1120",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    marginLeft: 12,
   },
 
-  value:{
-    fontSize:15,
-    fontWeight:"600",
-    color:"#222"
+  subBtnText: {
+    color: "#fff",
+    fontSize: 13,
+    fontWeight: "800",
   },
 
-  menuCard:{
-    backgroundColor:"#fff",
-    margin:16,
-    borderRadius:14,
-    paddingVertical:10,
-    elevation:2
+  card: {
+    backgroundColor: "#fff",
+    marginHorizontal: 16,
+    padding: 18,
+    borderRadius: 18,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
   },
 
-  menuItem:{
-    flexDirection:"row",
-    alignItems:"center",
-    padding:14,
-    borderBottomWidth:1,
-    borderBottomColor:"#f0f0f0"
+  sectionTitle: {
+    fontSize: 17,
+    fontWeight: "800",
+    color: "#7A1120",
+    marginBottom: 14,
   },
 
-  menuText:{
-    marginLeft:12,
-    fontSize:15,
-    fontWeight:"500",
-    color:"#333"
-  }
+  row: {
+    marginBottom: 14,
+  },
 
+  label: {
+    fontSize: 12,
+    color: "#888",
+  },
+
+  value: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#222",
+    marginTop: 3,
+  },
+
+  menuCard: {
+    backgroundColor: "#fff",
+    margin: 16,
+    borderRadius: 18,
+    paddingVertical: 8,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+  },
+
+  menuItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F2F2F2",
+  },
+
+  menuText: {
+    marginLeft: 12,
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#333",
+  },
 });

@@ -1,96 +1,42 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const biodataSchema = new mongoose.Schema(
   {
-    userId: {
+    user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
 
-    profileFor: {
-      type: String, // Self / Son / Daughter / Brother / Sister
-      default: "Self",
-    },
+    name: { type: String, required: true },
+    dob: { type: String, required: true },
+    placeOfBirth: { type: String, required: true },
+    birthTime: { type: String },
+    height: { type: String },
+    caste: { type: String },
+    education: { type: String },
+    bloodGroup: { type: String },
+    hobby: { type: String },
+    ras: { type: String },
+    language: { type: String },
+    job: { type: String },
+    salary: { type: String },
 
-    gender: {
-      type: String,
-      enum: ["Male", "Female"],
-      required: true,
-    },
+    fatherName: { type: String },
+    fatherIncome: { type: String },
+    motherName: { type: String },
+    siblings: { type: String },
 
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+    contactName: { type: String },
+    address: { type: String },
+    phone: { type: String },
+    email: { type: String },
 
-    age: {
-      type: Number,
-      required: true,
-    },
-
-    city: {
-      type: String,
-      required: true,
-    },
-
-    profession: {
-      type: String,
-      required: true,
-    },
-
-    education: {
-      type: String,
-      default: "",
-    },
-
-    religion: {
-      type: String,
-      default: "",
-    },
-
-    caste: {
-      type: String,
-      default: "",
-    },
-
-    height: {
-      type: String,
-      default: "",
-    },
-
-    income: {
-      type: String,
-      default: "",
-    },
-
-    phone: {
-      type: String,
-      default: "",
-    },
-
-    address: {
-      type: String,
-      default: "",
-    },
-
-    about: {
-      type: String,
-      default: "",
-    },
-
-    image: {
-      type: String,
-      default: "",
-    },
-
-    isApproved: {
-      type: Boolean,
-      default: true,
-    },
+    image: { type: String },
+    isPremium: { type: Boolean, default: false },
+    isVerified: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
 
-export default mongoose.model("Biodata", biodataSchema);
+module.exports = mongoose.model("Biodata", biodataSchema);
