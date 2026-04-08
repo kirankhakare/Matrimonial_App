@@ -1,4 +1,4 @@
-import { Tabs, router } from "expo-router";
+import { Tabs, router, useSegments } from "expo-router";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
@@ -8,17 +8,28 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 export default function TabLayout() {
   const [checkingAuth, setCheckingAuth] = useState(true);
   const insets = useSafeAreaInsets();
+  const segments = useSegments();
 
   useEffect(() => {
     checkAuth();
-  }, []);
+  }, [segments]);
 
   const checkAuth = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
+      const role = await AsyncStorage.getItem("role");
 
+      const userRole = role?.toUpperCase();
+
+      // ❌ No token
       if (!token) {
         router.replace("/(auth)/login");
+        return;
+      }
+
+      // 👑 Admin ला user tabs मध्ये येऊ देऊ नको
+      if (userRole === "ADMIN") {
+        router.replace("/admin/dashboard");
         return;
       }
     } catch (error) {
@@ -48,7 +59,8 @@ export default function TabLayout() {
           position: "absolute",
           height: Platform.OS === "android" ? 70 + insets.bottom : 80,
           paddingTop: 10,
-          paddingBottom: Platform.OS === "android" ? Math.max(insets.bottom, 12) : 12,
+          paddingBottom:
+            Platform.OS === "android" ? Math.max(insets.bottom, 12) : 12,
           borderTopWidth: 1,
           borderTopColor: "#E8D9C8",
           backgroundColor: "#FFF8F2",
@@ -70,7 +82,6 @@ export default function TabLayout() {
         },
       }}
     >
-      {/* HOME */}
       <Tabs.Screen
         name="index"
         options={{
@@ -85,14 +96,13 @@ export default function TabLayout() {
         }}
       />
 
-      {/* SUBSCRIPTION */}
       <Tabs.Screen
         name="subscription"
         options={{
           title: "Premium",
-          tabBarIcon: ({ color, size, focused }) => (
+          tabBarIcon: ({ color, size }) => (
             <MaterialIcons
-              name={focused ? "workspace-premium" : "workspace-premium"}
+              name="workspace-premium"
               size={size}
               color={color}
             />
@@ -100,7 +110,6 @@ export default function TabLayout() {
         }}
       />
 
-      {/* PROFILE */}
       <Tabs.Screen
         name="profile"
         options={{
@@ -115,7 +124,6 @@ export default function TabLayout() {
         }}
       />
 
-      {/* HIDE SEARCH ROUTE FROM TAB */}
       <Tabs.Screen
         name="search"
         options={{

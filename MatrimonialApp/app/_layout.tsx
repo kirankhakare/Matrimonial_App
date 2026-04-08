@@ -1,25 +1,36 @@
 import { Stack } from "expo-router";
 import { useEffect } from "react";
 import * as ScreenCapture from "expo-screen-capture";
-import { Alert, AppState, View, Text, StyleSheet } from "react-native";
+import { Platform } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 export default function RootLayout() {
   useEffect(() => {
-    // Android वर screenshots / recording block
-    ScreenCapture.preventScreenCaptureAsync();
+    const enableSecurity = async () => {
+      try {
+        // Only mobile devices वर block कर
+        if (Platform.OS === "android" || Platform.OS === "ios") {
+          await ScreenCapture.preventScreenCaptureAsync();
+        }
+      } catch (error) {
+        console.log("Screen capture block error:", error);
+      }
+    };
 
-    // iOS / Android detection (जर user try करेल)
-    const subscription = ScreenCapture.addScreenshotListener(() => {
-      Alert.alert(
-        "Security Alert",
-        "Screenshots are not allowed in this app for privacy reasons."
-      );
-    });
+    enableSecurity();
 
     return () => {
-      ScreenCapture.allowScreenCaptureAsync();
-      subscription.remove();
+      const disableSecurity = async () => {
+        try {
+          if (Platform.OS === "android" || Platform.OS === "ios") {
+            await ScreenCapture.allowScreenCaptureAsync();
+          }
+        } catch (error) {
+          console.log("Allow screen capture error:", error);
+        }
+      };
+
+      disableSecurity();
     };
   }, []);
 

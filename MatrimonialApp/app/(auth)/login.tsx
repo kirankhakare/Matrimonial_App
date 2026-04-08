@@ -16,13 +16,14 @@ import { loginUser } from "../../services/authService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import API from "../../services/api";
+
 export default function Login() {
   const [form, setForm] = useState({
     email: "",
     password: "",
   });
 
-const handleLogin = async () => {
+ const handleLogin = async () => {
   if (!form.email || !form.password) {
     alert("Please fill all fields");
     return;
@@ -34,10 +35,25 @@ const handleLogin = async () => {
     const token = res.data.token;
     const user = res.data.user;
 
+    // ✅ Normalize role
+    const userRole = user?.role?.toUpperCase();
+
+    // ✅ Save auth data
     await AsyncStorage.setItem("token", token);
     await AsyncStorage.setItem("user", JSON.stringify(user));
+    await AsyncStorage.setItem("role", userRole);
 
-    // 🔍 Check if biodata exists
+    console.log("LOGIN USER:", user);
+    console.log("LOGIN ROLE:", userRole);
+
+    // 👑 ADMIN LOGIN
+    if (userRole === "ADMIN") {
+      alert("Admin Login Successful 👑");
+      router.replace("/admin/dashboard");
+      return;
+    }
+
+    // 👤 USER LOGIN → biodata check
     try {
       const biodataRes = await API.get("/biodata/my", {
         headers: {
@@ -74,12 +90,14 @@ const handleLogin = async () => {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-          
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          showsVerticalScrollIndicator={false}
+        >
           {/* Logo Section */}
           <View style={styles.logoWrapper}>
             <Image
-              source={require("../../assets/images/icon.png")} // ⚠️ path change if needed
+              source={require("../../assets/images/icon.png")}
               style={styles.logo}
               resizeMode="contain"
             />
@@ -112,13 +130,21 @@ const handleLogin = async () => {
               onChangeText={(text) => setForm({ ...form, password: text })}
             />
 
-            <TouchableOpacity style={styles.button} onPress={handleLogin} activeOpacity={0.85}>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={handleLogin}
+              activeOpacity={0.85}
+            >
               <Text style={styles.buttonText}>Login</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.registerLink} onPress={() => router.push("/(auth)/register")}>
+            <TouchableOpacity
+              style={styles.registerLink}
+              onPress={() => router.push("/(auth)/register")}
+            >
               <Text style={styles.linkText}>
-                Don’t have an account? <Text style={styles.linkBold}>Register</Text>
+                Don’t have an account?{" "}
+                <Text style={styles.linkBold}>Register</Text>
               </Text>
             </TouchableOpacity>
           </View>

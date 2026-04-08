@@ -1,32 +1,16 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const paymentSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
     },
-    biodataId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Biodata",
-      required: true,
-    },
-    amount: {
-      type: Number,
-      default: 99,
-    },
-    status: {
-      type: String,
-      enum: ["PENDING", "SUCCESS", "FAILED"],
-      default: "PENDING",
-    },
-    paymentId: {
-      type: String,
-      default: "",
-    },
+    amount: Number,
+    status: String,
+    paymentId: String,
   },
   { timestamps: true }
 );
 
-export default mongoose.model("Payment", paymentSchema);
+module.exports = mongoose.model("Payment", paymentSchema);
