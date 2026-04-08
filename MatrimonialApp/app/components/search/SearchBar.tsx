@@ -9,7 +9,6 @@ type Props = {
 export default function SearchBar({ value, onChange }: Props) {
   return (
     <View style={styles.container}>
-
       {/* Search Icon */}
       <Ionicons name="search" size={18} color="#7A1120" style={styles.icon} />
 
@@ -20,15 +19,15 @@ export default function SearchBar({ value, onChange }: Props) {
         value={value}
         onChangeText={onChange}
         style={styles.input}
+        returnKeyType="search"
       />
 
       {/* Clear Button */}
-      {value.length > 0 && (
-        <TouchableOpacity onPress={() => onChange("")}>
-          <Ionicons name="close-circle" size={18} color="#B08B3E" />
+      {value.trim().length > 0 && (
+        <TouchableOpacity onPress={() => onChange("")} style={styles.clearBtn}>
+          <Ionicons name="close-circle" size={20} color="#B08B3E" />
         </TouchableOpacity>
       )}
-
     </View>
   );
 }
@@ -37,17 +36,19 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 14,
     backgroundColor: "#FFF8F2",
-    borderRadius: 28,
+    borderRadius: 30,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 13,
     borderWidth: 1,
     borderColor: "#E8D9C8",
+
     shadowColor: "#000",
-    shadowOpacity: 0.04,
-    shadowRadius: 5,
-    elevation: 2,
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 3,
   },
 
   icon: {
@@ -57,7 +58,11 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 14,
-    color: "#333",
+    color: "#2F2F2F",
     fontWeight: "500",
+  },
+
+  clearBtn: {
+    marginLeft: 8,
   },
 });

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
+import React from "react";
+import { ScrollView, TouchableOpacity, Text, StyleSheet, View } from "react-native";
 
 const filters = [
   "All",
@@ -8,21 +8,15 @@ const filters = [
   "Occupation",
   "City",
   "Age",
-  "Premium"
+  "Premium",
 ];
 
 type Props = {
-  onSelect?: (value: string) => void;
+  selected: string;
+  onSelect: (value: string) => void;
 };
 
-export default function FilterTabs({ onSelect }: Props) {
-  const [activeFilter, setActiveFilter] = useState("All");
-
-  const handleSelect = (item: string) => {
-    setActiveFilter(item);
-    onSelect?.(item);
-  };
-
+export default function FilterTabs({ selected, onSelect }: Props) {
   return (
     <View style={styles.wrapper}>
       <ScrollView
@@ -31,16 +25,16 @@ export default function FilterTabs({ onSelect }: Props) {
         contentContainerStyle={styles.container}
       >
         {filters.map((item) => {
-          const isActive = activeFilter === item;
+          const active = selected === item;
 
           return (
             <TouchableOpacity
               key={item}
-              style={[styles.tab, isActive && styles.activeTab]}
-              onPress={() => handleSelect(item)}
+              style={[styles.tab, active && styles.activeTab]}
+              onPress={() => onSelect(item)}
               activeOpacity={0.85}
             >
-              <Text style={[styles.tabText, isActive && styles.activeTabText]}>
+              <Text style={[styles.tabText, active && styles.activeTabText]}>
                 {item}
               </Text>
             </TouchableOpacity>
@@ -53,36 +47,40 @@ export default function FilterTabs({ onSelect }: Props) {
 
 const styles = StyleSheet.create({
   wrapper: {
-    marginTop: 8,
-    marginBottom: 10,
+    marginBottom: 14,
   },
 
   container: {
-    paddingRight: 10,
+    paddingRight: 8,
   },
 
   tab: {
-    backgroundColor: "#F5E6D3",
-    paddingVertical: 9,
     paddingHorizontal: 16,
+    paddingVertical: 10,
     borderRadius: 24,
-    marginRight: 10,
+    backgroundColor: "#FFF8F2",
     borderWidth: 1,
     borderColor: "#E8D9C8",
+    marginRight: 10,
   },
 
   activeTab: {
     backgroundColor: "#7A1120",
     borderColor: "#7A1120",
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 3,
   },
 
   tabText: {
-    color: "#7A1120",
     fontSize: 13,
     fontWeight: "700",
+    color: "#7A1120",
   },
 
   activeTabText: {
-    color: "#fff",
+    color: "#FFF",
   },
 });

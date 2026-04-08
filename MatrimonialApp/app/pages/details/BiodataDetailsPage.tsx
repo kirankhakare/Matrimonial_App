@@ -7,44 +7,131 @@ import {
   TouchableOpacity,
   ScrollView,
   StatusBar,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { Ionicons, MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
+
+import { getBiodataById } from "../../../services/biodataService";
 
 export default function BiodataDetailsPage() {
+  const { id } = useLocalSearchParams();
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     checkSubscription();
-  }, []);
+    if (id) fetchDetails();
+  }, [id]);
 
   const checkSubscription = async () => {
     const sub = await AsyncStorage.getItem("isSubscribed");
     setIsSubscribed(sub === "true");
   };
 
-  const handleUnlock = () => {
-    router.push("/subscription");
+  const fetchDetails = async () => {
+    try {
+      const res = await getBiodataById(id as string);
+      setData(res.data);
+    } catch (error) {
+      console.log("Details Fetch Error:", error);
+      Alert.alert("Error", "Failed to load biodata details");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handleUnlock = () => {
+    router.push("/subscription/SubscriptionPage");
+  };
+
+  const getAge = (dob?: string) => {
+    if (!dob) return null;
+
+    try {
+      let birthDate: Date;
+
+      if (dob.includes("-") && dob.split("-")[0].length === 4) {
+        birthDate = new Date(dob);
+      } else if (dob.includes("/")) {
+        const [day, month, year] = dob.split("/");
+        birthDate = new Date(Number(year), Number(month) - 1, Number(day));
+      } else if (dob.includes("-")) {
+        const [day, month, year] = dob.split("-");
+        birthDate = new Date(Number(year), Number(month) - 1, Number(day));
+      } else {
+        return null;
+      }
+
+      if (isNaN(birthDate.getTime())) return null;
+
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+
+      if (
+        monthDiff < 0 ||
+        (monthDiff === 0 && today.getDate() < birthDate.getDate())
+      ) {
+        age--;
+      }
+
+      return age;
+    } catch {
+      return null;
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.loader}>
+        <ActivityIndicator size="large" color="#7A1120" />
+        <Text style={styles.loadingText}>Loading biodata...</Text>
+      </View>
+    );
+  }
+
+  if (!data) {
+    return (
+      <View style={styles.loader}>
+        <Text style={styles.notFoundText}>Biodata not found</Text>
+      </View>
+    );
+  }
+
+  const age = getAge(data.dob);
 
   return (
     <LinearGradient
       colors={["#FFF8F2", "#FFFFFF", "#FFF9F4"]}
       style={styles.gradient}
     >
-      <StatusBar barStyle="dark-content" translucent backgroundColor="transparent" />
+      <StatusBar
+        barStyle="dark-content"
+        translucent
+        backgroundColor="transparent"
+      />
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* HERO IMAGE SECTION */}
+        {/* HERO IMAGE */}
         <View style={styles.heroWrapper}>
           <Image
-            source={require("../../../assets/resently/resently1.jpg")}
+            source={
+              data.image
+                ? { uri: data.image }
+                : require("../../../assets/resently/resently1.jpg")
+            }
             style={styles.heroImage}
           />
 
-          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+          <TouchableOpacity
+            style={styles.backBtn}
+            onPress={() => router.back()}
+          >
             <Ionicons name="arrow-back" size={22} color="#fff" />
           </TouchableOpacity>
 
@@ -52,20 +139,33 @@ export default function BiodataDetailsPage() {
 
           <View style={styles.heroInfo}>
             <View style={styles.badgeRow}>
-              <View style={styles.premiumBadge}>
-                <Ionicons name="diamond" size={12} color="#fff" />
-                <Text style={styles.badgeText}> Premium</Text>
-              </View>
+              {data.isPremium && (
+                <View style={styles.premiumBadge}>
+                  <Ionicons name="diamond" size={12} color="#fff" />
+                  <Text style={styles.badgeText}> Premium</Text>
+                </View>
+              )}
 
-              <View style={styles.verifiedBadge}>
-                <MaterialIcons name="verified" size={14} color="#fff" />
-                <Text style={styles.badgeText}> Verified</Text>
-              </View>
+              {data.isVerified && (
+                <View style={styles.verifiedBadge}>
+                  <MaterialIcons name="verified" size={14} color="#fff" />
+                  <Text style={styles.badgeText}> Verified</Text>
+                </View>
+              )}
             </View>
 
-            <Text style={styles.name}>Rahul Patil, 28</Text>
-            <Text style={styles.meta}>5'8" • Jain • Engineer</Text>
-            <Text style={styles.city}>Pune, Maharashtra</Text>
+            <Text style={styles.name}>
+              {data.name}
+              {age ? `, ${age}` : ""}
+            </Text>
+
+            <Text style={styles.meta}>
+              {data.height || "-"} • {data.caste || "-"} • {data.job || "-"}
+            </Text>
+
+            <Text style={styles.city}>
+              {data.placeOfBirth || "Location not available"}
+            </Text>
           </View>
         </View>
 
@@ -84,10 +184,10 @@ export default function BiodataDetailsPage() {
 
         {/* ABOUT */}
         <View style={styles.card}>
-          <Text style={styles.sectionTitle}>About Me</Text>
+          <Text style={styles.sectionTitle}>About Profile</Text>
           <Text style={styles.paragraph}>
-            I am a simple, family-oriented and career-focused person looking for a
-            compatible life partner who values respect, understanding and togetherness.
+            {data.name} is a family-oriented and career-focused individual
+            looking for a compatible life partner.
           </Text>
         </View>
 
@@ -95,50 +195,87 @@ export default function BiodataDetailsPage() {
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Basic Information</Text>
 
-          <InfoRow icon="briefcase" label="Profession" value="Engineer" />
-          <InfoRow icon="school" label="Education" value="BE Mechanical" />
-          <InfoRow icon="diamond" label="Religion" value="Jain" />
-          <InfoRow icon="resize" label="Height" value={`5'8"`} />
-          <InfoRow icon="location" label="City" value="Pune" />
-          <InfoRow icon="calendar" label="Age" value="28 Years" />
+          <InfoRow icon="briefcase" label="Profession" value={data.job || "-"} />
+          <InfoRow icon="school" label="Education" value={data.education || "-"} />
+          <InfoRow icon="diamond" label="Caste" value={data.caste || "-"} />
+          <InfoRow icon="resize" label="Height" value={data.height || "-"} />
+          <InfoRow icon="location" label="City" value={data.placeOfBirth || "-"} />
+          <InfoRow icon="calendar" label="Age" value={age ? `${age} Years` : "-"} />
+          <InfoRow icon="water" label="Blood Group" value={data.bloodGroup || "-"} />
+          <InfoRow icon="language" label="Language" value={data.language || "-"} />
+          <InfoRow icon="star" label="Rashi" value={data.ras || "-"} />
+          <InfoRow icon="time" label="Birth Time" value={data.birthTime || "-"} />
         </View>
 
-        {/* LOCKED OR UNLOCKED SECTION */}
+        {/* LOCKED OR UNLOCKED */}
         {!isSubscribed ? (
           <>
             <View style={styles.lockCard}>
-              <Text style={styles.sectionTitle}>Premium Locked Details 🔒</Text>
+              <View style={styles.lockOverlay}>
+                <Ionicons name="lock-closed" size={40} color="#7A1120" />
+                <Text style={styles.lockOverlayTitle}>Premium Content Locked</Text>
+                <Text style={styles.lockOverlaySub}>
+                  Upgrade to view full biodata details
+                </Text>
+              </View>
+
+              <Text style={styles.sectionTitle}>Premium Locked Details</Text>
 
               <LockRow text="Contact Number Locked" />
               <LockRow text="Email ID Locked" />
               <LockRow text="Family Details Locked" />
-              <LockRow text="Annual Income Locked" />
-              <LockRow text="Partner Preference Full Details Locked" />
+              <LockRow text="Salary / Income Locked" />
+              <LockRow text="Address Locked" />
             </View>
 
             <View style={styles.subscriptionCard}>
-              <Text style={styles.subTitle}>Unlock Full Biodata 🔓</Text>
+              <View style={styles.subHeader}>
+                <MaterialIcons
+                  name="workspace-premium"
+                  size={22}
+                  color="#B08B3E"
+                />
+                <Text style={styles.subTitle}> Unlock Full Biodata</Text>
+              </View>
+
               <Text style={styles.subText}>
-                ₹100 मध्ये 1 वर्षासाठी contact details, family info आणि premium biodata access मिळवा.
+                View contact details, family info, salary, and complete biodata
+                by upgrading your plan.
               </Text>
             </View>
 
-            <TouchableOpacity style={styles.unlockButton} onPress={handleUnlock}>
-              <Text style={styles.unlockText}>Unlock Full Biodata</Text>
+            <TouchableOpacity
+              style={styles.unlockButton}
+              onPress={handleUnlock}
+              activeOpacity={0.9}
+            >
+              <Ionicons name="lock-open-outline" size={18} color="#fff" />
+              <Text style={styles.unlockText}> Unlock Full Biodata</Text>
             </TouchableOpacity>
           </>
         ) : (
-          <>
-            <View style={styles.card}>
-              <Text style={styles.sectionTitle}>Unlocked Details</Text>
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>Unlocked Details</Text>
 
-              <InfoRow icon="call" label="Contact Number" value="+91 98XXXXXX12" />
-              <InfoRow icon="mail" label="Email ID" value="rahulpatil@gmail.com" />
-              <InfoRow icon="cash" label="Annual Income" value="₹8,50,000" />
-              <InfoRow icon="home" label="Family Type" value="Joint Family" />
-              <InfoRow icon="people" label="Partner Preference" value="Educated, family-oriented, caring partner" />
-            </View>
-          </>
+            <InfoRow icon="call" label="Contact Number" value={data.phone || "-"} />
+            <InfoRow icon="mail" label="Email ID" value={data.email || "-"} />
+            <InfoRow icon="cash" label="Salary" value={data.salary || "-"} />
+            <InfoRow icon="person" label="Father Name" value={data.fatherName || "-"} />
+            <InfoRow
+              icon="cash-outline"
+              label="Father Income"
+              value={data.fatherIncome || "-"}
+            />
+            <InfoRow icon="woman" label="Mother Name" value={data.motherName || "-"} />
+            <InfoRow icon="people" label="Siblings" value={data.siblings || "-"} />
+            <InfoRow icon="home" label="Address" value={data.address || "-"} />
+            <InfoRow
+              icon="person-circle"
+              label="Contact Person"
+              value={data.contactName || "-"}
+            />
+            <InfoRow icon="heart" label="Hobby" value={data.hobby || "-"} />
+          </View>
         )}
       </ScrollView>
     </LinearGradient>
@@ -157,7 +294,7 @@ function InfoRow({
   return (
     <View style={styles.infoRow}>
       <Ionicons name={icon} size={18} color="#7A1120" style={{ width: 24 }} />
-      <View>
+      <View style={{ flex: 1 }}>
         <Text style={styles.infoLabel}>{label}</Text>
         <Text style={styles.infoValue}>{value}</Text>
       </View>
@@ -179,8 +316,27 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
+  loader: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FFF8F2",
+  },
+
+  loadingText: {
+    marginTop: 10,
+    color: "#7A1120",
+    fontWeight: "600",
+  },
+
+  notFoundText: {
+    color: "#7A1120",
+    fontWeight: "700",
+    fontSize: 16,
+  },
+
   heroWrapper: {
-    height: 420,
+    height: 430,
     position: "relative",
   },
 
@@ -194,8 +350,8 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 0,
     width: "100%",
-    height: "45%",
-    backgroundColor: "rgba(0,0,0,0.55)",
+    height: "48%",
+    backgroundColor: "rgba(0,0,0,0.58)",
   },
 
   backBtn: {
@@ -227,7 +383,7 @@ const styles = StyleSheet.create({
   premiumBadge: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#6D28D9",
+    backgroundColor: "#7A1120",
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
@@ -304,6 +460,7 @@ const styles = StyleSheet.create({
     shadowColor: "#000",
     shadowOpacity: 0.06,
     shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
   },
 
   sectionTitle: {
@@ -345,6 +502,40 @@ const styles = StyleSheet.create({
     padding: 18,
     borderRadius: 20,
     elevation: 3,
+    position: "relative",
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+  },
+
+  lockOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(255,255,255,0.90)",
+    zIndex: 2,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 20,
+    paddingHorizontal: 20,
+  },
+
+  lockOverlayTitle: {
+    marginTop: 10,
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#7A1120",
+  },
+
+  lockOverlaySub: {
+    marginTop: 6,
+    fontSize: 12,
+    color: "#666",
+    textAlign: "center",
   },
 
   lockRow: {
@@ -370,6 +561,12 @@ const styles = StyleSheet.create({
     borderColor: "#F4D7B5",
   },
 
+  subHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+
   subTitle: {
     fontSize: 17,
     fontWeight: "800",
@@ -379,23 +576,27 @@ const styles = StyleSheet.create({
   subText: {
     fontSize: 13,
     color: "#555",
-    marginTop: 6,
+    marginTop: 4,
     lineHeight: 22,
   },
 
   unlockButton: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: "#7A1120",
     marginHorizontal: 20,
     marginTop: 18,
     marginBottom: 30,
     paddingVertical: 15,
     borderRadius: 30,
-    alignItems: "center",
+    elevation: 4,
   },
 
   unlockText: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "800",
+    marginLeft: 6,
   },
 });
