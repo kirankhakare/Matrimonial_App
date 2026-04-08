@@ -9,6 +9,7 @@ import {
   StatusBar,
   ActivityIndicator,
   Alert,
+  Linking,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
@@ -46,7 +47,7 @@ export default function BiodataDetailsPage() {
   };
 
   const handleUnlock = () => {
-    router.push("/subscription/SubscriptionPage");
+    router.push("/(tabs)/subscription");
   };
 
   const getAge = (dob?: string) => {
@@ -85,6 +86,74 @@ export default function BiodataDetailsPage() {
       return null;
     }
   };
+
+  const handleSave = async () => {
+    try {
+      const saved = await AsyncStorage.getItem("savedProfiles");
+      let arr = saved ? JSON.parse(saved) : [];
+
+      const exists = arr.find(
+        (item: any) => item._id === data._id || item.id === data.id
+      );
+
+      if (!exists) {
+        arr.push(data);
+        await AsyncStorage.setItem("savedProfiles", JSON.stringify(arr));
+        Alert.alert("Saved ❤️", "Profile saved successfully");
+      } else {
+        Alert.alert("Already Saved", "This profile is already saved");
+      }
+    } catch (error) {
+      console.log("Save Error:", error);
+      Alert.alert("Error", "Could not save profile");
+    }
+  };
+
+ const handleShare = async () => {
+  try {
+    const age = getAge(data?.dob);
+
+    const appName = "Bhagyabandhan Matrimony";
+    const playStoreLink =
+      "https://play.google.com/store/apps/details?id=com.kiran.matrimonial";
+
+    const message = `💍 Matrimonial Profile
+
+👤 Name: ${data?.name || "-"}
+🎂 Age: ${age || "-"}
+📍 City: ${data?.placeOfBirth || "-"}
+💼 Profession: ${data?.job || "-"}
+🎓 Education: ${data?.education || "-"}
+🧬 Caste: ${data?.caste || "-"}
+📏 Height: ${data?.height || "-"}
+
+✨ About:
+${
+  data?.about ||
+  `${data?.name || "This person"} is a well-educated and family-oriented individual from ${
+    data?.placeOfBirth || "their hometown"
+  }. ${data?.gender === "Female" ? "She" : "He"} is currently working as ${
+    data?.job || "a professional"
+  } and values simplicity, family culture, and mutual respect.`
+}
+
+📲 View more profiles on ${appName}
+🔗 ${playStoreLink}`;
+
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+
+    const supported = await Linking.canOpenURL(whatsappUrl);
+
+    if (supported) {
+      await Linking.openURL(whatsappUrl);
+    } else {
+      Alert.alert("WhatsApp Not Found", "Please install WhatsApp first");
+    }
+  } catch (error) {
+    console.log("Share Error:", error);
+    Alert.alert("Error", "Unable to share profile");
+  }
+};
 
   if (loading) {
     return (
@@ -171,12 +240,12 @@ export default function BiodataDetailsPage() {
 
         {/* ACTION BUTTONS */}
         <View style={styles.actionRow}>
-          <TouchableOpacity style={styles.actionBtn}>
+          <TouchableOpacity style={styles.actionBtn} onPress={handleSave}>
             <Ionicons name="heart-outline" size={18} color="#7A1120" />
             <Text style={styles.actionText}> Save</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionBtn}>
+          <TouchableOpacity style={styles.actionBtn} onPress={handleShare}>
             <Ionicons name="share-social-outline" size={18} color="#7A1120" />
             <Text style={styles.actionText}> Share</Text>
           </TouchableOpacity>
@@ -186,8 +255,12 @@ export default function BiodataDetailsPage() {
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>About Profile</Text>
           <Text style={styles.paragraph}>
-            {data.name} is a family-oriented and career-focused individual
-            looking for a compatible life partner.
+            {data.about ||
+              `${data.name} is a well-educated and family-oriented individual from ${
+                data.placeOfBirth || "their hometown"
+              }. ${data.gender === "Female" ? "She" : "He"} is currently working as ${
+                data.job || "a professional"
+              } and values simplicity, family culture, and mutual respect.`}
           </Text>
         </View>
 

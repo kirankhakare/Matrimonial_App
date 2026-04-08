@@ -43,7 +43,7 @@ export default function RecentBiodataSlider({
 }: Props) {
   const handleCardPress = (id: number) => {
     if (!isSubscribed) {
-      router.push("/subscription");
+      router.push("/subscription/SubscriptionPage");
     } else {
       router.push(`/details/${id}`);
     }
@@ -51,7 +51,7 @@ export default function RecentBiodataSlider({
 
   const handleViewAll = () => {
     if (!isSubscribed) {
-      router.push("/subscription");
+      router.push("/subscription/SubscriptionPage");
     } else {
       router.push("/biodata/all");
     }

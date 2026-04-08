@@ -7,8 +7,6 @@ const filters = [
   "Caste",
   "Occupation",
   "City",
-  "Age",
-  "Premium",
 ];
 
 type Props = {
